@@ -92,29 +92,64 @@ final class BrewParametersTests: XCTestCase {
 
 final class SharedStoreTests: XCTestCase {
 
-    override func tearDown() {
-        SharedStore.shared.clear()
-        super.tearDown()
+    /// A store pointed at its own temporary directory. Tests must not depend on
+    /// whatever ambient cache directory the host happens to provide — that was
+    /// the original failure here, and it would have been just as opaque on
+    /// someone's laptop.
+    private var store: SharedStore!
+    private var directory: URL!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SharedStoreTests-\(UUID().uuidString)", isDirectory: true)
+        store = SharedStore(directory: directory)
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: directory)
+        store = nil
+        directory = nil
+        try super.tearDownWithError()
     }
 
     func testSnapshotSurvivesARoundTrip() throws {
-        let store = SharedStore.shared
-        let snapshot = WidgetSnapshot.placeholder
-        XCTAssertTrue(store.save(snapshot))
+        try store.write(WidgetSnapshot.placeholder)
 
         let loaded = store.load()
-        XCTAssertEqual(loaded.lastBrew?.recipeName, snapshot.lastBrew?.recipeName)
+        XCTAssertEqual(loaded.lastBrew?.recipeName, "Everyday V60")
         XCTAssertEqual(loaded.pendingAdjustment?.headline, "Grind finer")
+        XCTAssertEqual(loaded.pendingAdjustment?.kind, .grindFiner)
         XCTAssertEqual(loaded.activeBean?.freshness, .peak)
         XCTAssertEqual(loaded.totalBrews, 24)
+        XCTAssertTrue(loaded.hasBrewed)
+    }
+
+    /// The App Group container is created by the system, but a fallback directory
+    /// may not exist yet — writing has to create it rather than silently failing.
+    func testWritingCreatesTheDirectory() throws {
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.path))
+        try store.write(.placeholder)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: store.fileURL.path))
     }
 
     /// A widget reading a missing or corrupt file must render an empty state, not
     /// crash — a crashed widget shows as a blank tile, which users read as a
     /// broken app.
     func testMissingSnapshotReadsAsEmptyRatherThanFailing() {
-        SharedStore.shared.clear()
-        XCTAssertFalse(SharedStore.shared.load().hasBrewed)
+        XCTAssertFalse(store.load().hasBrewed)
+    }
+
+    func testCorruptSnapshotReadsAsEmptyRatherThanFailing() throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data("this is not json".utf8).write(to: store.fileURL)
+        XCTAssertFalse(store.load().hasBrewed)
+    }
+
+    func testClearRemovesTheSnapshot() throws {
+        try store.write(.placeholder)
+        store.clear()
+        XCTAssertFalse(store.load().hasBrewed)
     }
 
     func testBeanSummaryDerivesFreshnessAtSnapshotTime() {

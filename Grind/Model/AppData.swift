@@ -68,6 +68,9 @@ struct AppDataStore {
 
     func save(_ data: AppData) {
         guard let encoded = try? makeEncoder().encode(data) else { return }
+        // Same defensiveness as SharedStore: the App Group container is created by
+        // the system, but the fallback directory may not exist yet.
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try? encoded.write(to: fileURL, options: .atomic)
     }
 
