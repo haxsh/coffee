@@ -1,0 +1,99 @@
+name: Grind
+
+# Generated with XcodeGen rather than committed as a .xcodeproj.
+#
+# A pbxproj is a merge-conflict machine and unreviewable in a diff. This file is
+# the source of truth: it is readable, it is the only place the bundle ID and App
+# Group appear, and `xcodegen generate` reproduces the project deterministically
+# on any machine. Run it after pulling, and any time you add a file.
+
+options:
+  bundleIdPrefix: com.haxsh
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: false
+
+# ---------------------------------------------------------------------------
+# Change these two lines and nothing else to make the project yours.
+# The App Group must also be updated in the two .entitlements files and in
+# CoffeeKit's AppGroup.identifier — BUILD.md lists all four.
+# ---------------------------------------------------------------------------
+settings:
+  base:
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""            # set this to your 10-character Team ID
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    GENERATE_INFOPLIST_FILE: NO
+    SWIFT_EMIT_LOC_STRINGS: YES
+    TARGETED_DEVICE_FAMILY: "1"     # iPhone only for v1
+  configs:
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+
+packages:
+  CoffeeKit:
+    path: Packages/CoffeeKit
+
+targets:
+
+  Grind:
+    type: application
+    platform: iOS
+    sources:
+      - path: Grind
+      # Compiled into both targets: the Live Activity contract and the intents
+      # the widgets fire. Keeping them out of CoffeeKit is what lets CoffeeKit
+      # stay pure Foundation and testable without an iOS SDK.
+      - path: Shared
+    dependencies:
+      - package: CoffeeKit
+      - target: GrindWidgets
+        embed: true
+        codeSign: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.haxsh.grind
+        INFOPLIST_FILE: Grind/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Grind/Grind.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  GrindWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: GrindWidgets
+      - path: Shared
+    dependencies:
+      - package: CoffeeKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.haxsh.grind.widgets
+        INFOPLIST_FILE: GrindWidgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: GrindWidgets/GrindWidgets.entitlements
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: WidgetBackground
+
+schemes:
+  Grind:
+    build:
+      targets:
+        Grind: all
+        GrindWidgets: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      # CoffeeKit's tests live in the package and appear in Xcode's test
+      # navigator automatically. They also run standalone with
+      # `swift test --package-path Packages/CoffeeKit` — no Xcode required.
+    archive:
+      config: Release

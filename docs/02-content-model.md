@@ -194,23 +194,30 @@ surfaced.**
 
 | # | Condition | Hypothesis | The one change | Concept shown |
 |---|---|---|---|---|
-| 1 | `restDays < 4` **and** extraction ≠ 0 | Beans are still degassing; CO₂ is disrupting extraction and results will be erratic | *No change — this bag needs 2–3 more days. Brew the same way and compare.* | Degassing |
-| 2 | `restDays > 35` **and** descriptor ∈ {flat, dull, papery} | Stale coffee. No brew variable recovers this. | *Nothing to fix — this bag is past it. Note it and move on.* | Freshness & staling |
-| 3 | `extraction ≤ −1` | Under-extracted | **Grind one step finer.** (shows *your* grinder's units) | Under-extraction |
-| 4 | `extraction ≥ +1` **and** `actualTotalTime > expected.max` | Over-extracted via contact time | **Grind one step coarser** — your drawdown ran long | Over-extraction, Drawdown |
-| 5 | `extraction ≥ +1` | Over-extracted | **Grind one step coarser.** | Over-extraction |
-| 6 | `extraction == 0` **and** `strength ≤ −1` | Extraction is right, cup is dilute | **Same grind — use less water.** Ratio 1:16 → 1:15. | Brew ratio |
-| 7 | `extraction == 0` **and** `strength ≥ +1` | Extraction is right, cup is too concentrated | **Same grind — use more water.** 1:15 → 1:16. | Brew ratio |
-| 8 | `extraction == 0` **and** `strength == 0` **and** `rating ≥ 4` | It worked | *Nothing to change. This is your recipe now.* → offer **Save as my recipe** | — |
-| 9 | `extraction == 0` **and** `strength == 0` **and** `rating ≤ 3` | Technically sound, not enjoyable — this is a bean or water problem, not a brew problem | *Your brew is dialled in. Try a different coffee, or check your water.* | Water for coffee |
-| 10 | `waterTempC < 88` **and** extraction ≤ −1 | Temperature-driven under-extraction | **Hotter water** before touching the grind | Water temperature |
+| 1 | `freshness == .resting` **and** cup is not balanced | Beans are still degassing; CO₂ is disrupting extraction and results will be erratic | *No change — this bag needs 2–3 more days. Brew the same way and compare.* | Degassing |
+| 2 | `freshness == .stale` **and** descriptor ∈ {flat, papery} | Stale coffee. No brew variable recovers this. | *Nothing to fix — this bag is past it. Note it and move on.* | Freshness & staling |
+| 3 | `extraction ≤ −1` **and** `waterTempC < 88` | Temperature-driven under-extraction | **Hotter water** — before touching the grind | Water temperature |
+| 4 | `extraction ≤ −1` | Under-extracted | **Grind one step finer.** (shows *your* grinder's units) | Under-extraction |
+| 5 | `extraction ≥ +1` **and** `actualTotalTime > expected.max + 15s` | Over-extracted via contact time | **Grind one step coarser** — your drawdown ran long | Drawdown |
+| 6 | `extraction ≥ +1` | Over-extracted | **Grind one step coarser.** | Over-extraction |
+| 7 | `extraction == 0` **and** `strength ≤ −1` | Extraction is right, cup is dilute | **Same grind — use less water.** Ratio 1:16 → 1:15. | Brew ratio |
+| 8 | `extraction == 0` **and** `strength ≥ +1` | Extraction is right, cup is too concentrated | **Same grind — use more water.** 1:15 → 1:16. | Brew ratio |
+| 9 | `balanced` **and** `rating ≥ 4` | It worked | *Nothing to change. This is your recipe now.* → offer **Save as my recipe** | — |
+| 10 | `balanced` **and** `rating ≤ 3` | Technically sound, not enjoyable — a bean or water problem, not a brew problem | *Your brew is dialled in. Try a different coffee, or check your water.* | Water for coffee |
 | 11 | Fallback | Insufficient signal | *Brew it the same way once more so we have something to compare.* | — |
+
+> **Ordering correction (found during implementation).** The temperature rule was
+> originally listed last. That made it unreachable — rule 4 catches every
+> `extraction ≤ −1` first — and it gave the wrong advice besides: water well below
+> range swamps grind, so it has to be fixed first. It is now rule 3, and
+> `testCoolWaterIsCheckedBeforeGrind` in `DiagnosisEngineTests` guards against the
+> ordering regressing.
 
 ### Rules the engine follows
 
 1. **Never suggest more than one change.** Two variables means an uninterpretable
    result and a user who never converges. This is the entire point.
-2. **Fix extraction before strength.** Grind moves both axes; ratio moves mainly
+2. **Fix the dominant cause first, then extraction, then strength.** Grind moves both axes; ratio moves mainly
    strength. Chasing strength first means re-doing it after the grind changes.
 3. **Rule out the bean before blaming the brewer.** Rules 1, 2 and 9 exist so the
    app doesn't send someone chasing grind settings on coffee that was never going
@@ -250,8 +257,15 @@ launch, which a model isn't.
 
 ## 5. Persistence & sync
 
-- **Local-first, offline-always.** SwiftData (or Core Data) on device. No network
-  call is ever on the critical path of a brew.
+- **Local-first, offline-always.** A single Codable JSON document on device, in
+  the shared App Group container. No network call is ever on the critical path
+  of a brew.
+  *Changed during implementation from SwiftData.* A journal is small, v1 has no
+  sync, export is a hard requirement, and the widgets need to read the same data
+  from a second process. A document gives atomic writes, a trivial export path
+  and a pre-migration backup for free, with no store contention. SwiftData plus
+  CloudKit is the right answer when sync lands in v1.1 — it is not the right
+  answer for shipping the loop.
 - **Content bundle** (methods, recipes, lessons, concepts, rule sets) ships in the
   app and is remotely updatable, additively. Update failure is silent; the bundled
   version always works.

@@ -1,0 +1,64 @@
+name: iOS
+
+# This repo is authored in an environment with no Swift toolchain and no Xcode,
+# so CI is the compiler. Every push gets built on a real Mac.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coffeekit:
+    name: CoffeeKit tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest installed Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          xcodebuild -version
+          swift --version
+
+      # CoffeeKit is pure Foundation precisely so this step needs no simulator,
+      # no signing and no project file. If the diagnosis engine is wrong, it
+      # fails here in about twenty seconds.
+      - name: Test the domain layer
+        run: swift test --package-path Packages/CoffeeKit
+
+  app:
+    name: Build app + widgets
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest installed Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the project
+        run: xcodegen generate
+
+      # Code signing off: this proves the code compiles and the widget extension
+      # embeds, without needing a Team ID in CI.
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Grind.xcodeproj \
+            -scheme Grind \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify || xcodebuild build \
+            -project Grind.xcodeproj \
+            -scheme Grind \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
