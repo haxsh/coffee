@@ -1,6 +1,6 @@
 # Grind — coffee learning & recipe app for iOS
 
-**Status:** Core loop implemented, not yet compiled on a Mac — see [`BUILD.md`](BUILD.md).
+**Status:** Core loop implemented. Builds clean and all tests pass on CI — see [`BUILD.md`](BUILD.md).
 **Working name:** Grind (placeholder — see Open Questions)
 **Platform:** iOS 18+, SwiftUI, WidgetKit
 
@@ -42,13 +42,21 @@ Brew Setup ─▶ Guided Brew ─▶ Log Brew ─▶ Next Time ─▶ (adjustmen
               └─ survives a locked screen
 ```
 
-### Verified vs unverified
+### What's verified
 
-The domain layer has a real test suite — the full diagnosis grid, rule ordering,
-grinder mapping, brew maths, and every concept link. **None of it has been
-compiled**, because this was written in a Linux container with no Swift
-toolchain. CI (`.github/workflows/ios.yml`) builds and tests it on a macOS runner
-on every push; that run is the source of truth for whether it works.
+[![iOS](https://github.com/haxsh/coffee/actions/workflows/ios.yml/badge.svg?branch=claude/coffee-learning-recipe-app-rtyv9s)](https://github.com/haxsh/coffee/actions/workflows/ios.yml)
+
+CI runs on a macOS runner on every push and does two things:
+
+- **Builds the app and the widget extension** for the iOS Simulator, from a
+  project generated fresh out of `project.yml`.
+- **Runs the domain test suite** — 58 tests covering the full diagnosis grid,
+  rule ordering, the grinder mapping, brew maths, snapshot persistence, and
+  every concept link.
+
+Both are green. What CI *cannot* tell you is whether the guided brew feels right
+with wet hands at an actual sink — that's still the thing worth testing first,
+and it needs a person and a kettle.
 
 ## Read order
 

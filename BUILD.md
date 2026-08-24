@@ -1,9 +1,11 @@
 # Getting this running
 
 Everything in this repo was written without a Mac, an Xcode, or a Swift
-compiler — so **nothing here has been built yet.** CI builds it on a real Mac on
-every push (`.github/workflows/ios.yml`); check that run before you start, and it
-will tell you whether the code compiles today.
+compiler. CI builds it on a real Mac on every push
+(`.github/workflows/ios.yml`) — **currently green**: the app and widget
+extension compile for the Simulator, and all 58 domain tests pass.
+
+So it builds. What nobody has done yet is *run* it, which is what needs you.
 
 Below is the whole list of what only you can do.
 
