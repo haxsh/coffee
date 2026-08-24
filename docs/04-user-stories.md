@@ -1,5 +1,10 @@
 # Epics & User Stories
 
+> Updated by [`07-repositioning-brief.md`](07-repositioning-brief.md): adds Epic G
+> (exploration) and Epic H (honest limits), and revises the critical path. Epics A–F
+> are unchanged in substance — they are the mastery loop, which survived the
+> repositioning intact.
+
 Stories are written as **job stories** where situation drives behaviour, and as
 classic user stories where the role is what matters. Acceptance criteria are
 testable — if a criterion can't be passed or failed by someone who wasn't in the
@@ -262,14 +267,160 @@ without reading instructions outside the app.
 
 ---
 
+## Epic G — Exploration
+
+**Goal:** A user can find out what's out there and pick something to try.
+**Done when:** A new user opens three method overviews and starts a brew, without
+being told which one to pick.
+
+---
+
+### G1 — Compare methods honestly · P0
+
+> When I know there are other ways to make coffee but not which is worth my money or
+> my counter space, I want to see them side by side on things I actually care about,
+> so I can pick one instead of defaulting to what I already own.
+
+**Acceptance criteria**
+- [ ] Given the Explorer, when it opens, then every method is listed with effort,
+      time, gear cost, forgiveness and a taste description.
+- [ ] Given a method I can't brew in the app, when I see it, then its card says so in
+      words and offers "Learn about this" — never a disabled Start button.
+- [ ] Given I told onboarding what gear I own, when the Explorer opens, then methods
+      I can make today are ordered first.
+- [ ] Given I skipped the gear question, when the Explorer opens, then it orders by
+      forgiveness and offers one tap to tell it what I own.
+- [ ] Given any method card, when I read it, then nothing on it implies a level of
+      support the app doesn't have for it.
+
+---
+
+### G2 — Try something new with the friction as low as it goes · P0
+
+> When I've decided to try a method for the first time, I want the app to not require
+> gear I don't have, so a first attempt is actually possible tonight.
+
+**Acceptance criteria**
+- [ ] Given a method I've never brewed, when I start it, then the recipe offered is
+      the most forgiving one available for that method, not the highest-clarity one.
+- [ ] Given I have no grinder configured, when I start any brew, then it proceeds
+      with descriptive grind guidance and never blocks.
+- [ ] Given I complete a first brew on a method, when it saves, then that method
+      appears on my shelf.
+
+---
+
+### G3 — See what I've tried · P1
+
+> When I've been at this a couple of weeks, I want to see what I've actually made, so
+> I get some credit for exploring and can see what I haven't touched yet.
+
+**Acceptance criteria**
+- [ ] Given ≥ 1 logged brew, when I open the Explorer, then the shelf shows each
+      method I've brewed at least once.
+- [ ] Given the shelf, when it renders, then it is derived from the journal — a
+      deleted brew that was my only one on a method removes it.
+- [ ] Given the shelf, when I look at it, then nothing on it can lapse, expire or
+      break. It is a record, not a streak.
+
+---
+
+### G4 — Be nudged toward mastery, not away from it · P1
+
+> When I've tried a few methods and keep coming back to one, I want the app to notice
+> and help me get good at it, so exploring doesn't quietly become drifting.
+
+**Acceptance criteria**
+- [ ] Given ≥ 2 logged brews on one method, when I open Brew, then it opens on
+      Continue rather than Explore.
+- [ ] Given a method with several brews, when I view it, then I can see how many
+      I've logged on it.
+- [ ] Given I'm making progress on one method, when the app surfaces that, then it
+      never frames trying another method as a failure.
+
+---
+
+## Epic H — Honest limits
+
+**Goal:** The app never claims precision it doesn't have.
+**Done when:** A tier 2 method's advice is visibly, structurally different from a
+tier 1 diagnosis.
+
+---
+
+### H1 — Advice matches the tier · P0
+
+> When the app tells me something after a brew, I want to know whether it's about my
+> cup or about the brewer in general, so I know how much to trust it.
+
+**Acceptance criteria**
+- [ ] Given a `.full` method, when I log a brew, then I get a diagnosis and one
+      adjustment in my own units.
+- [ ] Given a `.guided` method, when I log a brew, then I get method-level notes and
+      **no** single-change card, **no** from → to values, and copy that names the
+      limit.
+- [ ] Given a `.reference` method, when I view it, then there is no timer and no log.
+- [ ] Given any tier 2 method, when its advice renders, then it shares no layout
+      component with Next Time.
+- [ ] **Enforced in the engine, not the view:** given a `.guided` method, when the
+      engine runs, then it cannot return a per-symptom diagnosis at all.
+
+---
+
+### H2 — Water gets ruled out before grind · P0
+
+> When my coffee is sour and it's because my RO water can't extract properly, I want
+> to be told that, so I don't spend three weeks chasing my grinder.
+
+**Acceptance criteria**
+- [ ] Given RO water and a sour or thin cup, when I log it, then the advice names
+      water — not grind — and gives the 70:30 blend fix.
+- [ ] Given I've seen the water advice once, when I log another sour brew, then
+      normal grind advice resumes. **The rule interrupts once; it does not repeat.**
+- [ ] Given I change my recorded water source, when I next log a sour brew, then the
+      rule may fire again.
+- [ ] Given water "not sure", when I log anything, then the rule never fires.
+
+---
+
+### H3 — Milk drinks aren't misdiagnosed · P0
+
+> When I make a coffee with milk, I want to be asked something I can actually answer,
+> so the advice I get back means something.
+
+**Acceptance criteria**
+- [ ] Given a method where milk is normal, when I log a brew, then a milk toggle is
+      present; given a method where it isn't, then it is absent.
+- [ ] Given the milk toggle is on, when the log renders, then axis 1 asks
+      harsh ↔ smooth ↔ flat, not sour ↔ bitter.
+- [ ] Given a milk brew, when the engine runs, then no rule reading the extraction
+      axis can fire.
+- [ ] Given I set the toggle on a method, when I next log that method, then it
+      defaults to my last answer — costing zero taps in the steady state.
+- [ ] **Instrumented:** median log time on milk methods stays ≤ 30s.
+
+---
+
 ## Story map — the critical path
 
 ```
-F2 ─▶ F1 ─▶ A1 ─▶ A2 ─▶ A3 ─▶ B1 ─▶ B2 ─▶ B3 ─▶ E1
-                              │       │
-                              └─ C1 ──┘   ◀── the ambient learning join
+        EXPLORATION                    THE HANDOFF                MASTERY
+   F2 ─▶ G1 ─▶ G2 ─▶ G3 ────────────▶ G4 ────────────▶ A1 ─▶ A2 ─▶ A3
+              │                                          │
+              └─ H1 (tier honesty) ─┐                    ▼
+                                    └──────────▶ B1 ─▶ B2 ─▶ B3 ─▶ E1
+                                                  │      │
+                                            H2, H3 ┘     └─ C1  ◀── ambient learning
 ```
 
-**Build B1 → B2 → B3 before any breadth work.** Everything else is supporting
-structure; that chain is the product. If it isn't working by the end of the
-prototype phase, no amount of methods, lessons or charts will save the app.
+**The chain that is the product is still B1 → B2 → B3** — log, diagnose, apply. That
+did not change with the repositioning; it moved from being the *whole* app to being
+the destination the app escorts people toward.
+
+**What changed is the entrance.** G1 → G2 → G4 is now what a user meets first, and
+**G4 is the single most important story in this document** — it is the handoff, and
+the north star measures precisely it.
+
+**H1 is a prerequisite for shipping breadth at all.** Adding methods without tier
+honesty means claiming diagnosis on methods that have no rule table, which is worse
+than not shipping them.

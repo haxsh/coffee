@@ -4,13 +4,19 @@
 **Working name:** Grind (placeholder — see Open Questions)
 **Platform:** iOS 18+, SwiftUI, WidgetKit
 
-A home-brewing app that closes the loop between *making* coffee and *understanding*
-coffee. Most tools do one or the other: recipe-and-timer apps tell you what to do
-but never why; blogs and videos teach but aren't attached to the cup in your hand;
-journal apps record data and give nothing back.
+A home-brewing app for the Indian metro market, built around **two loops**: guided
+exploration across many brewing methods, and a diagnosis engine you graduate into
+once you've picked one.
 
-**The core bet:** teaching lands when it arrives at the moment of a bad cup.
-Brew → taste → diagnose → adjust → learn → brew again.
+**The core bet:** people explore first and settle second, and the app's central job
+is escorting them across — try six methods, find yours, then get good at it.
+
+- **Exploration** — discover → try → compare → prefer
+- **Mastery** — brew → taste → diagnose → adjust
+
+Breadth is affordable because methods are supported at three tiers: full diagnosis,
+guided timer only, or an honest reference card. **A method never implies precision
+the engine doesn't have.**
 
 ## Documents
 
@@ -23,6 +29,7 @@ Brew → taste → diagnose → adjust → learn → brew again.
 | [`docs/04-user-stories.md`](docs/04-user-stories.md) | Epics and dev-ready stories with acceptance criteria |
 | [`docs/05-assumptions-and-open-questions.md`](docs/05-assumptions-and-open-questions.md) | Assumption log, open questions, risks |
 | [`docs/06-roadmap.md`](docs/06-roadmap.md) | Phasing, what ships when, what's deliberately deferred |
+| [`docs/07-repositioning-brief.md`](docs/07-repositioning-brief.md) | **Source of truth.** Supersedes `00`–`06` wherever they conflict: two loops, method support tiers, India/metro positioning, water and milk |
 
 ## Code
 

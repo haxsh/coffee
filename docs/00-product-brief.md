@@ -1,36 +1,50 @@
 # Product Brief — Grind
 
-**Owner:** Harsh · **Status:** Draft v0.1 · **Last updated:** 2026-08-24
+**Owner:** Harsh · **Status:** Draft v0.2 — repositioned · **Last updated:** 2026-08-25
+
+> Repositioned by [`07-repositioning-brief.md`](07-repositioning-brief.md) from
+> *mastery of one method* to *guided exploration across many, for the Indian metro
+> market*. Where this document and `07` disagree, `07` wins.
 
 ---
 
 ## 1. The idea, compressed
 
-A home-brewing companion for iOS that teaches you coffee *through* the coffee you
-actually make. It ships four things — brew recipes with a guided timer, structured
-lessons, a brew journal, and a bean library — but they are one product, not four,
-because they form a single loop.
+A home-brewing companion for iOS that helps you find the brewing method that suits
+you, then makes you good at it. It ships brew recipes with a guided timer, a
+browsable library of brewing methods, structured concepts, a brew journal, and a
+bean shelf — held together by **two loops**, and by the app's job of moving you
+from the first to the second.
 
 ---
 
 ## 2. Problem
 
-### Problem statement
+There are two problems, and they belong to the same person at different times.
 
-**User:** A home brewer who has bought decent gear (a grinder, a V60 or AeroPress,
-a kettle) and buys specialty beans.
-**Situation:** They stand at the counter each morning with 5 minutes and one shot
+### The exploration problem — months 0 to 1
+
+**User:** Someone in a metro who got into specialty coffee through a café or a
+lockdown purchase, and owns one brewer they didn't really choose.
+**Situation:** They know there are other ways to make coffee. They don't know which
+is worth their money, their counter space, or their morning.
+**Pain:** Every answer online is a fifteen-minute video by someone with a €400
+grinder, and none of them says *"here's what this actually tastes like, what it
+costs, and whether you'd like it."*
+**Impact:** They stay on the one brewer they have, or they buy the wrong second one.
+
+### The mastery problem — month 2 onward
+
+**User:** The same person, now settled on a method.
+**Situation:** They stand at the counter each morning with five minutes and one shot
 at the cup.
-**Pain:** They follow a recipe from a video, get a cup that's sour or bitter or
-just flat, and have no idea which of the eight variables caused it. So they change
-three things at once, or nothing, and never converge.
-**Impact:** They stall at "fine" coffee forever, blame the beans, and eventually
-stop caring — or churn to the next gadget.
-**Current workaround:** YouTube recipes, a notes app, a kitchen scale, and memory.
-The notes are never re-read because they aren't attached to anything actionable.
+**Pain:** They follow a recipe, get a cup that's sour or bitter or just flat, and
+have no idea which of eight variables caused it. So they change three things at
+once, or nothing, and never converge.
+**Impact:** They stall at "fine" coffee forever, blame the beans, and stop caring.
 
-> One-liner: *Home brewers can't connect what they did to how it tasted, so they
-> repeat mistakes and plateau at mediocre coffee.*
+> One-liner: *People can't tell which brewing method is for them, and once they pick
+> one they can't connect what they did to how it tasted.*
 
 ### Why this is a real gap, not a crowded one
 
@@ -40,68 +54,99 @@ The notes are never re-read because they aren't attached to anything actionable.
 | Education | YouTube, roaster blogs, books, courses | Excellent content, entirely detached from the cup in your hand. Consumed on a couch, not at a counter. |
 | Journals / logs | Structured logging, export, stats | Record-keeping with no feedback. Data in, nothing out. |
 | Bean trackers | Inventory, roast dates, freshness | Isolated from brewing entirely. |
+| **All of the above** | Written for a Western enthusiast with a burr grinder, filtered water and black coffee | **Nothing models milk, RO water, chicory, or South Indian filter — which is most of how coffee is actually made in our market.** |
 
-Nobody closes the loop. The loop is the product.
+That last row is the differentiated one. The first four are the reason to build a
+diagnosis engine; the fifth is the reason to build it *here*.
 
 ---
 
-## 3. The core loop
+## 3. Two loops
+
+The product is no longer one loop. It is two, sequenced — and the app's central job
+is escorting a user from the first into the second.
 
 ```
-        ┌──────────────────────────────────────────────┐
-        │                                              │
-   [1] BREW ──▶ [2] TASTE ──▶ [3] DIAGNOSE ──▶ [4] ADJUST
-        ▲                          │                   │
-        │                          ▼                   │
-        └──────────── [5] LEARN ◀──┘◀──────────────────┘
+   EXPLORATION LOOP                          MASTERY LOOP
+   months 0–1 · acquisition                  month 2+ · retention
+
+   discover ──▶ try ──▶ compare              brew ──▶ taste ──▶ diagnose
+      ▲                    │                   ▲                    │
+      └──── prefer ◀───────┘                   └──── adjust ◀───────┘
+                  │                                      ▲
+                  └──────── "this is my method" ─────────┘
+                                    ↑
+                        the handoff — the whole bet
 ```
+
+### The exploration loop
+
+1. **Discover** — browse every method the app knows about, comparable on effort,
+   time, gear cost, forgiveness, and what the cup tastes like.
+2. **Try** — for anything the app supports with a timer, brew it with the friction
+   as low as it goes: no grinder required, sensible defaults, forgiving recipe.
+3. **Compare** — see what you've tried and what you thought of it.
+4. **Prefer** — settle. The progress object here is a **shelf of methods attempted**,
+   not a streak.
+
+### The mastery loop
 
 1. **Brew** — a guided, step-timed pour with everything pre-computed for your dose,
    your grinder, your bean.
-2. **Taste** — 20 seconds of structured input. Not a paragraph. A rating and 1–3
-   outcome descriptors from a fixed vocabulary.
-3. **Diagnose** — the app maps descriptors to an extraction hypothesis
-   ("sour + thin → under-extracted") and names the single most likely cause.
-4. **Adjust** — it proposes **one** variable change for the next brew and pre-loads
-   it. One variable. Changing three is why people never converge.
-5. **Learn** — the diagnosis links to a Concept Card ("what under-extraction is,
-   in 60 seconds") and, if you want it, the full lesson. Learning arrives *because
-   the cup was sour*, not because you opened a lessons tab.
+2. **Taste** — under 30 seconds of structured input. A rating and two axes.
+3. **Diagnose** — map the axes to a hypothesis and name the single most likely cause.
+4. **Adjust** — propose **one** variable change and pre-load it. One. Changing three
+   is why people never converge.
 
-**Everything in this spec exists to serve that loop.** If a feature doesn't feed a
-step of it, it's a candidate for cutting.
+Learning runs through both: a Concept Card is reachable from any technical term,
+in either loop.
 
-### Why this makes four pillars into one product
+### They pull against each other, on purpose
 
-| Pillar | Its job in the loop | Without the loop, it's… |
+A user hopping between methods never accumulates the repetitions on one method that
+the diagnosis engine needs. That tension is not a flaw to design away — it is the
+shape of the product. Exploration buys attention; mastery keeps it. **The metric
+that matters is the handoff between them**, not the volume of either.
+
+### Why this makes the pillars one product
+
+| Pillar | Its job | Without the loops, it's… |
 |---|---|---|
-| Recipes + timer | Step 1 | Another timer app |
-| Journal | Step 2 + memory | A notes app with fields |
-| Lessons | Step 5 | A blog you don't visit |
-| Bean library | Context for 1–4 | An inventory spreadsheet |
+| Method Explorer | Exploration 1–4 | A Wikipedia category page |
+| Recipes + timer | Exploration 2, Mastery 1 | Another timer app |
+| Journal | Mastery 2 + memory | A notes app with fields |
+| Concepts | Both, ambiently | A blog you don't visit |
+| Bean shelf | Context for everything | An inventory spreadsheet |
 
 ---
 
 ## 4. Users
 
-### Primary — "Plateaued Enthusiast"
-Six months to three years in. Owns a burr grinder and at least one brewer. Buys
-whole bean from a local roaster. Brews 1–2 cups a day, almost always the same
-method. Can taste that some cups are better but can't reliably reproduce the good
-ones. Has watched Hoffmann. Wants their coffee to get measurably better and enjoys
-the craft framing.
+Target market: **Mumbai, Bangalore, Pune and comparable tier-1 Indian cities.**
 
-**This is who we design for.**
+### Primary — "Metro Explorer"
+Mid-twenties to late thirties, salaried or running something. Came in through a café
+— Blue Tokai, Third Wave, Subko — or a lockdown purchase. Owns *a* brewer, usually
+one they were given or picked on a whim: a French press, a moka pot, maybe an
+AeroPress. **Does not necessarily own a grinder**, and often buys pre-ground.
+Brews with RO water without thinking about it. Drinks a good share of their coffee
+with milk. Curious about what else is out there and wary of spending on the wrong
+thing.
 
-### Secondary — "Just Got a Grinder"
-Two weeks in, gift or impulse purchase, currently intimidated. Needs the app to
-make the first ten brews *not fail*, and to explain vocabulary without condescension.
-We serve them with onboarding and defaults, not with a separate mode.
+**This is who we design for.** Note how much of that paragraph the previous version
+of this document assumed away.
 
-### Explicit non-user (v1)
+### Secondary — "Filter Coffee Native"
+Grew up on South Indian filter kaapi and makes it well by feel. Curious about
+specialty, but every resource assumes black coffee, a burr grinder, and vocabulary
+they've never needed. We serve them by treating filter coffee as a first-class
+method rather than a curiosity, and by never implying that the way they already
+make coffee is the wrong way.
+
+### Explicit non-user
 Café professionals and roasters. Their needs — shot logging at volume, refractometry,
-green inventory, staff training records — pull the product toward a different app.
-Serving them early would ruin the counter-side simplicity the primary user needs.
+green inventory, staff training — pull toward a different app and would ruin the
+counter-side simplicity the primary user needs.
 
 ---
 
@@ -123,80 +168,97 @@ Non-negotiables that fall out of this:
 Any design that only works held close, dry, and with full attention is wrong,
 however beautiful it looks in a mockup.
 
+The exploration loop has a *different* context — a couch, a commute, a phone held
+close, full attention — and should not inherit these constraints. The Method
+Explorer is reading; the guided brew is doing.
+
 ---
 
 ## 6. Goals & success metrics
 
-**North star:** *Brews logged per weekly active user.* If people aren't logging,
-the loop isn't running and nothing else in the app matters.
+**North star:** *% of users who reach 5 logged brews on a single method within 30
+days.* One number, and it measures the handoff — whether exploration is converting
+into mastery. Neither loop alone tells you that.
 
 | Goal | Metric | Target (first 90 days post-launch) |
 |---|---|---|
-| The loop starts | % of new users who log a brew within 24h of install | ≥ 45% |
-| The loop repeats | % of users with ≥ 2 logged brews in week 1 | ≥ 30% |
-| The loop is trusted | % of brews where the suggested adjustment was applied next time | ≥ 40% |
-| The loop works | Median rating of brews 8–10 vs brews 1–3, same user | +0.6 stars |
-| Learning is ambient, not a chore | % of lesson opens that originate from a Concept Card, not the Learn tab | ≥ 50% |
+| **The handoff** | % of users with ≥ 5 logged brews on one method within 30 days | **≥ 25%** |
+| Exploration starts | % of new users who open ≥ 3 method overviews in week 1 | ≥ 60% |
+| Exploration converts | % of new users who log a brew within 24h of install | ≥ 45% |
+| Breadth is real | Median distinct methods *tried* per user by day 30 | ≥ 3 |
+| The mastery loop is trusted | % of brews where the suggested adjustment was applied next time | ≥ 40% |
+| The mastery loop works | Median rating of brews 8–10 vs brews 1–3, same user, same method | +0.6 stars |
+| Learning is ambient | % of concept opens originating in context, not the Learn tab | ≥ 50% |
 | Retention | D30 retention | ≥ 20% |
 
-**Counter-metrics (things we must not break):**
-- Median time to complete the post-brew log: **≤ 30 seconds.** If logging feels
-  like data entry, the loop dies at step 2. This is the single most fragile point
-  in the product.
-- Guided-brew abandonment (started timer, never finished): **≤ 15%.**
-- Cold start to "Start brew" tappable: **≤ 1.2s.**
+*Secondary:* brews logged per weekly active user — the old north star, kept because
+it's the fastest signal that something has broken.
 
-**Leading indicators in the first two weeks:** onboarding completion rate, first-brew
-completion rate, Concept Card open rate.
+**Counter-metrics (things we must not break):**
+- Median time to complete the post-brew log: **≤ 30 seconds**, and this does not get
+  a budget increase for milk or water. If logging feels like data entry, the mastery
+  loop dies at step 2. This remains the single most fragile point in the product.
+- Guided-brew abandonment (started timer, never finished): **≤ 15%.**
+- Cold start to a tappable brew: **≤ 1.2s.**
+- **Tier-3 dead ends:** % of Method Explorer sessions ending on a reference method
+  with no onward action. If browsing routinely terminates in "you can't do anything
+  with this here", the explorer is a brochure.
 
 ---
 
-## 7. MVP scope — and the line
+## 7. Scope — support tiers, not a method count
 
-**The core bet MVP tests:** *If we hand people a diagnosis and one adjustment after
-each cup, they will log the next brew — and their ratings will climb.*
+The old MVP argument — *one method, prove the loop* — is retired. It was right for
+the bet it was testing and wrong for this one. Breadth is now the acquisition
+strategy, so the scope question changes from *how many methods* to **how deeply each
+one is supported**.
 
-That bet is testable with **one brewing method**. It is not made more testable by
-six. Breadth is the most tempting and most expensive way to fail here: six methods
-means six recipe sets, six diagnosis tables, six sets of illustrations, and one
-untested hypothesis.
+Full tier definitions and the current assignment live in
+[`07-repositioning-brief.md` §2](07-repositioning-brief.md). In short:
 
-### In scope — v1
+| Tier | User gets | Cost |
+|---|---|---|
+| **1 — Full** | Recipes, guided timer, log, **full diagnosis + one adjustment** | High — its own rule table, and expert review |
+| **2 — Guided** | Recipes, guided timer, log, **method-level advice** | Medium — recipes and timings |
+| **3 — Reference** | An honest overview card. No timer, no logging. | Low — content only |
 
-| Feature | Why it's in |
-|---|---|
-| **V60 pour-over only**, 3 built-in recipes (standard, forgiving, high-clarity) | Highest variable-sensitivity → best showcase for diagnosis. Widest ownership in the target segment. |
-| Guided brew timer with Live Activity, audio + haptic cues | The hero. The loop can't start without it. |
-| Brew setup: bean picker, dose → ratio → water, grind, temp | Pre-computation is the whole reason to use an app over a video |
-| Post-brew log: rating + fixed descriptor vocabulary + optional note | Step 2. Kept brutally short by design. |
-| **Diagnosis engine** — descriptor → hypothesis → one adjustment | The differentiator. Nothing ships without it. |
-| Concept Cards — ~25 concepts, tappable from anywhere | The learning delivery mechanism |
-| One course: *Foundations* (~8 lessons, 3–5 min each) | Enough to prove the Learn pillar; a destination for people who want depth |
-| Bean library — add/edit bags, roast date + rest indicator, link to brews | Needed for diagnosis fidelity (age is a variable) and it's cheap |
-| Journal — list, detail, "brew this again" | Step 2's storage; also the emotional payoff (progress made visible) |
-| Grinder profile — map your grinder to a normalized coarseness scale | Without this, "grind finer" is meaningless advice |
-| Onboarding — gear, goal, experience level → seeds first recipe + path | The first brew must not fail |
+This is what makes breadth affordable. A method costs a paragraph unless it earns
+more, and **a method never implies precision the engine doesn't have** — that's the
+rule the tiering exists to enforce.
 
-### Out of scope — v1
+### Still in scope, unchanged
+
+Guided timer with Live Activity and cues · the diagnosis engine · concept cards ·
+bean shelf with roast-level-aware freshness · journal with planned-vs-actual ·
+grinder calibration · offline-first, local-only, no accounts.
+
+### Newly in scope
+
+Method Explorer · support tiers · water source as a diagnosis gate · the milk flag ·
+progressive disclosure driven by logged brew count · Indian roasters and gear in all
+examples and defaults.
+
+### Out of scope — unchanged
 
 | Deferred | Why |
 |---|---|
-| AeroPress, espresso, French press, Chemex, cold brew, moka | Add one per release after the loop is proven. Espresso especially — different variables, different diagnosis model, needs its own spec. |
-| Insights / trends dashboard | Needs data density we won't have at launch. Ships when users have 20+ brews. |
-| Compare two brews side by side | Nice, but the diagnosis already does the comparing |
-| Community / shared recipes | Requires moderation, accounts, and a content strategy. Whole separate initiative. |
-| Bag label / barcode scanning | Delightful, not load-bearing. Manual entry is 30s. |
-| Apple Watch app | Strong candidate for v1.1 — genuinely solves the wet-hands problem — but not before the phone loop works |
-| CloudKit sync across devices | Local-first at launch; sync in v1.1 |
-| Refractometry / TDS input | Pro-tier user, not our primary |
-| Video lessons | Text + illustration first. Video is a production commitment, not a feature. |
+| Insights / trends dashboard | Needs data density we won't have at launch |
+| Compare two brews side by side | The diagnosis already does the comparing |
+| Community / shared recipes | Moderation, accounts, content strategy. Separate initiative. |
+| Apple Watch app | Genuinely solves the wet-hands problem, but not before the phone loops work |
+| CloudKit sync | Local-first at launch |
+| Refractometry / TDS input | Not our user |
+| Water calculators, mineral profiles | Explicitly out — see `07` §4. The water *question* is in; the water *feature* is not. |
+| A beginner/advanced mode selector | Explicitly out — see `07` §6. Progressive disclosure instead. |
+| Video lessons | Text and illustration first. Video is a production commitment. |
 
-### MVP is done when…
-A new user can install, complete onboarding, brew a V60 with the guided timer,
-log the result in under 30 seconds, receive a specific diagnosis and one adjustment,
-tap through to a Concept Card explaining it, and start the next brew with that
-adjustment already applied — **entirely offline, one-handed, without reading a
-manual.**
+### v1 is done when…
+
+A new user can install, browse a dozen brewing methods and understand what each one
+is for, brew one of them with the guided timer without owning a grinder, log the
+result in under 30 seconds, get advice honest to that method's tier, and — if they
+come back to the same method — start converging on a cup they like. **Entirely
+offline, one-handed, without reading a manual.**
 
 ---
 
@@ -204,22 +266,31 @@ manual.**
 
 - **Not a social app.** No feed, no follows, no likes. The feedback loop is with
   your own past cups.
-- **Not a gear store or affiliate funnel.** Recommending gear the moment we're
-  also teaching corrodes the trust the teaching depends on.
+- **Not a marketplace, and not an affiliate funnel** — but *not silent about gear
+  and roasters either.* This changed. Pointing outward is allowed at a **triggered
+  moment**: when a bag crosses its freshness window or is running out, when a lesson
+  ends, when a method you've been reading about needs a piece of kit you don't own.
+  Never as a browsable directory, never as a persistent surface.
+  The reasoning: a directory makes us a shop, and a shop can't be trusted to teach.
+  A single well-timed pointer, after we've already delivered something, reads as
+  help. The difference is entirely in the timing, which is why the rule is about
+  *when* rather than *whether*.
+  **Write the affiliate policy now**, while there is no money in it. A rule set
+  before the temptation exists is the only kind that holds.
 - **Not gamified with streaks and badges as the primary motivator.** The motivator
-  is that the coffee gets better and you can taste it. Streaks are a cheap
-  substitute that we can add later if the real one doesn't hold.
-- **Not comprehensive.** A glossary of 400 terms is a worse product than 25 concepts
-  someone actually reads.
+  is that the coffee gets better and you can taste it. The exploration loop's shelf
+  of methods tried is a record, not a streak — it never breaks, and it never nags.
+- **Not comprehensive in depth.** Broad in *coverage*, narrow in *claims*. A method
+  we can only describe gets described. That is the whole point of Tier 3.
 
 ---
 
 ## 9. Next step
 
-Two things before any pixels:
-1. **Resolve OQ-1 and OQ-3** in `05-assumptions-and-open-questions.md` — the
-   diagnosis rule table needs a real coffee expert's review, and we need to decide
-   whether descriptor input is chips or sliders (it drives the 30-second target).
-2. **Prototype the brew timer screen only**, and test it at an actual sink with wet
-   hands and a real kettle. Not on a desk. Everything else in this spec is
-   negotiable; that screen is the product.
+1. **OQ-1 is now more blocking, not less.** Two full rule tables means twice as much
+   coffee advice that a roaster hasn't checked. See `05`.
+2. **Resolve the milk-axis question** (`05`, A16). Milk doesn't only suppress rules —
+   it invalidates one of the two axes the log screen asks about, which changes the
+   log UI and caps how far a milk-first method can be promoted.
+3. **Prototype the brew timer at an actual sink.** Unchanged, and still the thing
+   most worth doing before anything else.

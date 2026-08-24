@@ -1,5 +1,10 @@
 # Screen-by-Screen Design Brief
 
+> Updated by [`07-repositioning-brief.md`](07-repositioning-brief.md): adds the
+> Method Explorer (S29) and the tier-aware advice surface (S30), and revises
+> onboarding, Brew Home, Log Brew and Next Time. Screens are no longer scoped to
+> one method.
+
 29 screens. Three are specced deep because they carry the product: **S05 Guided
 Brew**, **S06 Log Brew**, **S07 Next Time**. The rest are specced at the level a
 designer needs to start.
@@ -13,7 +18,9 @@ designer needs to start.
 | # | Screen | Tab | Ship |
 |---|---|---|---|
 | S00 | Onboarding | — | 🟢 |
-| S01 | Brew Home | Brew | 🟢 |
+| S01 | Brew Home (Continue state) | Brew | 🟢 |
+| S29 | **Method Explorer** (Explore state) | Brew | 🟢 |
+| S30 | **Method Notes** (tier 2 advice) | modal | 🟢 |
 | S02 | Method Detail | Brew | 🟢 |
 | S03 | Recipe Detail | Brew | 🟢 |
 | S04 | Brew Setup | Brew | 🟢 |
@@ -135,13 +142,21 @@ Appears automatically when the timer ends, as a sheet you can drink through.
    Presented as **5-position segmented controls, not sliders.** Sliders demand
    precision with wet hands and imply false granularity; segments are one tap each.
    Both default to centre, so the fast path is: rate → done.
-3. **Descriptors (optional).** A single row of chips, horizontally scrolling:
+3. **Milk toggle — only on methods where `takesMilk` is true.** Absent entirely on a
+   V60, so it costs the majority of brews nothing. It sits *above* the axes because
+   it changes what axis 1 asks (see `02`, "Milk does not suppress a rule"), and it
+   remembers the last answer per method — so the steady-state cost is **zero taps**:
+   a moka drinker who always adds milk answers it once, ever.
+   **It does not get a budget increase.** If testing shows it pushing past 30
+   seconds, the toggle moves into the actuals disclosure and defaults from history
+   rather than being asked.
+4. **Descriptors (optional).** A single row of chips, horizontally scrolling:
    *sweet · juicy · sharp · drying · flat · muddy · tea-like · syrupy · papery · ashy*.
    Max 3. Each chip long-presses to a Concept Card.
-4. **Actuals, collapsed.** One summary line: *"18 g · 1:16 · 3:24 · 16 clicks"* with
+5. **Actuals, collapsed.** One summary line: *"18 g · 1:16 · 3:24 · 16 clicks"* with
    an edit affordance. Pre-filled from the timer and setup. Most users never open it.
-5. **Photo + note**, both optional, both last, both one tap to skip.
-6. **[Save & see what to change]** — primary, always enabled.
+6. **Photo + note**, both optional, both last, both one tap to skip.
+7. **[Save & see what to change]** — primary, always enabled.
 
 ### Rules
 - **Nothing is required except the rating.** A brew logged with only a rating is a
@@ -189,6 +204,11 @@ easy tomorrow.
 6. **[Not this time]** — tertiary, dismisses without applying. Always available; a
    recommendation you can't refuse isn't advice.
 
+### Tier gating
+S07 only ever renders for a `.full` method. A `.guided` method routes to S30 instead,
+and that routing is decided by the engine's output rather than by the view — a screen
+cannot accidentally opt a tier 2 method into a diagnosis it never produced.
+
 ### The moment that matters — closing the loop
 When a brew **applied a prior adjustment** and rated higher, S07 leads with it
 before anything else:
@@ -214,11 +234,21 @@ the honest one: when it *didn't* work, say that too, and suggest going back.
 Four screens, skippable at any point, before the tab bar exists.
 1. *What are you brewing with?* — method picker (v1: V60 pre-selected, others shown
    with "coming soon" so the roadmap is visible).
-2. *What do you grind with?* — searchable grinder list + "I don't know / pre-ground".
-   Feeds S25 calibration.
-3. *Where are you at?* — Just started / Been at it a while / Pretty dialled in.
-   Sets recipe defaults (forgiving vs high-clarity) and the starting course.
-4. *Let's brew one.* → straight into S04 with everything pre-filled.
+2. *What do you grind with?* — searchable grinder list + **"I don't know / pre-ground"
+   as a first-class answer, not an escape hatch.** A large share of this market buys
+   pre-ground; onboarding that treats that as a failure state loses them on screen
+   two. Feeds S25 calibration and the Explorer's default sort.
+3. *What water do you brew with?* — RO · tap · bottled · RO+tap mix · not sure.
+   One tap, five options, and it unlocks the single most valuable thing this app can
+   say to an Indian home brewer. "Not sure" is a fine answer and simply disables
+   rule 3.
+4. *Where are you at?* — Just started / Been at it a while / Pretty dialled in.
+   **Sets defaults only. It does not set a mode**, it is never read again after the
+   first few brews, and every advanced control stays reachable regardless — see
+   `07` §6 for why a stage selector is not being built.
+5. *Here's what you could make.* → the Explorer (S29), sorted by what they told us
+   they own — not straight into a brew. A user who hasn't chosen a method yet should
+   meet the choice, not be handed one.
 **Rule:** skipping produces working defaults, never a broken state. **Success
 criterion: the first brew must not fail.**
 
@@ -226,7 +256,10 @@ criterion: the first brew must not fail.**
 - **"Brew again"** card at the top: last brew's method + bean + any pending
   adjustment, one tap to S04 (or straight to S05 if nothing changed). The single
   most-used control in the app.
-- Method grid (locked methods visible with a badge → S27).
+- **Explore** — always visible, one tap, never buried. The Brew root is one screen
+  with two states (S01 / S29); which one opens is decided by whether the user has
+  brewed before.
+- Your methods — the ones you've actually made, with progress toward the handoff.
 - *Your recipes* / *Recent*.
 - Ratio calculator entry.
 - Empty state: a single large *Start your first brew* with a 4-minute promise.
@@ -364,6 +397,81 @@ whose entire premise is trust.
 Compact: elapsed + current water target. Expanded: step text, progress, Next, Pause.
 Lock screen: full step detail. Copy is ~40 characters and gets seen more than most
 screens — write it early, deliberately.
+
+## S29 — Method Explorer 🟢
+
+**The exploration loop's only home, and the first screen a new user ever sees.**
+
+### Context
+A couch, a commute, a phone held close, full attention. **This screen does not
+inherit S05's constraints** — it is reading, not doing, and designing it for wet
+hands would waste the one place in the app where density is affordable.
+
+### Job
+Answer *"what should I try next, and why?"* in one screen, without lying about what
+the app can do for each answer.
+
+### Layout
+- **Comparable rows, not a grid of icons.** A grid looks better and answers nothing.
+  Each row carries the five axes a beginner actually decides on: **effort, time,
+  gear cost, forgiveness, and what the cup tastes like.** Four are ordinal and render
+  as compact meters; the fifth is a short phrase, because taste doesn't rank.
+- **Tier is visible but never framed as a lock.** A reference method reads *"we can
+  tell you about this one"* — not a padlock. It isn't withheld, it's undescribed.
+- **Default order is what this user can most likely make today**, from the gear
+  answer in onboarding. Not alphabetical, not tier-first — leading with the fully
+  supported methods would read as a paywall, which is exactly what tiering must not
+  become.
+- **The shelf** sits at the top once anything is on it: methods tried, as a quiet
+  row of marks. A record, never a streak — it doesn't break and it never nags.
+- Filters, one line: *what I own · under 5 minutes · forgiving · no grinder needed*.
+  The last one matters more here than anywhere else in the app.
+
+### Tier-aware CTA
+| Tier | Button | Reads as |
+|---|---|---|
+| 1, 2 | **Start a brew** | you can do this now |
+| 3 | **Learn about this** | we'll tell you about it |
+
+Never a disabled Start. A greyed control reads as broken; an absent one with a
+sentence of explanation reads as honest.
+
+### Rejected
+- ❌ A "recommended for you" hero. We have no behavioural data on a new user, and a
+  fabricated recommendation is worse than an honest sort.
+- ❌ Star ratings on methods. Methods aren't better or worse, they're different, and
+  a 4.5 next to a V60 is a category error.
+- ❌ Locking the Explorer behind onboarding completion. It's the best content in the
+  app for an undecided user — it should be the thing they can reach fastest.
+
+---
+
+## S30 — Method Notes (tier 2 advice) 🟢
+
+**The most dangerous screen to get wrong**, because it sits exactly where a user
+expects S07 and must not be mistaken for it.
+
+### Job
+After a brew on a `.guided` method, say something useful about the *method* without
+implying a diagnosis of *this cup*.
+
+### It must not look like Next Time
+Different layout, different words, no borrowed components:
+
+| Next Time (S07, tier 1) | Method Notes (S30, tier 2) |
+|---|---|
+| "The one change" as the visual centre | No single-change card at all |
+| `18 → 16 clicks on your Encore` | No from → to numbers |
+| A verdict about *this* cup | Observations about *this brewer* |
+| "Save this for next time" | "Got it" |
+
+Copy is explicitly hedged and says why: *"We don't diagnose moka pots yet — here's
+what usually goes wrong with them."* Naming the limit is what buys the trust; a
+confident-sounding paragraph that turns out to be generic costs more than silence.
+
+### What it contains
+Two or three of the method's known failure modes, each with a concept link, ordered
+by how common they are — not personalised, and never presented as if they were.
 
 ---
 
