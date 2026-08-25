@@ -1,6 +1,6 @@
 # Grind — coffee learning & recipe app for iOS
 
-**Status:** Core loop implemented. Builds clean and all tests pass on CI — see [`BUILD.md`](BUILD.md).
+**Status:** Repositioned product implemented — exploration and mastery loops, twelve methods at three tiers. Builds clean and all tests pass on CI — see [`BUILD.md`](BUILD.md).
 **Working name:** Grind (placeholder — see Open Questions)
 **Platform:** iOS 18+, SwiftUI, WidgetKit
 
@@ -57,9 +57,9 @@ CI runs on a macOS runner on every push and does two things:
 
 - **Builds the app and the widget extension** for the iOS Simulator, from a
   project generated fresh out of `project.yml`.
-- **Runs the domain test suite** — 58 tests covering the full diagnosis grid,
-  rule ordering, the grinder mapping, brew maths, snapshot persistence, and
-  every concept link.
+- **Runs the domain test suite** — 88 tests covering both rule tables, tier
+  gating, the milk axis, the pre-ground path, the grinder mapping, brew maths,
+  journal migration, and every concept link.
 
 Both are green. What CI *cannot* tell you is whether the guided brew feels right
 with wet hands at an actual sink — that's still the thing worth testing first,

@@ -2,8 +2,8 @@
 
 Everything in this repo was written without a Mac, an Xcode, or a Swift
 compiler. CI builds it on a real Mac on every push
-(`.github/workflows/ios.yml`) — **currently green**: the app and widget
-extension compile for the Simulator, and all 58 domain tests pass.
+(`.github/workflows/ios.yml`) — **currently green**: the app and widget extension
+compile for the Simulator, and all 88 domain tests pass.
 
 So it builds. What nobody has done yet is *run* it, which is what needs you.
 
@@ -130,20 +130,55 @@ if it lands outside the existing source folders. Files inside `Grind/`,
 
 ## What's actually built
 
-The **core loop, end to end**, on V60 only — which is the scope line the spec
-argues for:
+The whole repositioned product, end to end.
 
-- Onboarding → grinder calibration → brew setup → **guided brew with Live
-  Activity, audio and haptic cues** → log in under 30 seconds → **diagnosis and
-  one adjustment** → applied automatically to the next brew
-- Journal with planned-vs-actual diffs, bean shelf with roast-level-aware
-  freshness, the concept library, CSV/JSON export
-- All four widgets
+**Exploration loop**
+- **Method Explorer** — twelve methods compared on effort, time, gear cost,
+  fussiness and what the cup tastes like. Sorted by what you can most likely make
+  today, from the gear you told onboarding about.
+- **The shelf** — methods you've actually brewed, derived from the journal. It
+  can't lapse or break; it's a record, not a streak.
+- **Method Detail** — recipes and a brew for the nine you can make; an honest
+  overview card plus two onward suggestions for the three you can't.
 
-**Deliberately not built yet:** lesson content (that's a writing project — see
-OQ-7), the recipe editor, insights, and any brew method other than V60.
+**Mastery loop**
+- Brew setup → **guided timer with Live Activity, audio and haptic cues** → log in
+  under 30 seconds → advice → applied automatically to the next brew.
+- **Two full rule tables.** V60 reaches for grind first; French press reaches for
+  steep time, because immersion is time-dominant.
+- **Tier-honest advice.** A guided method gets notes about the brewer and says so;
+  it never borrows the diagnosis layout.
 
----
+**The things that make it work here**
+- **Pre-ground is a first-class answer.** You're never told to grind. The engine
+  spends temperature, time and ratio instead — and when those run out it tells you
+  which brewer your coffee actually suits.
+- **Milk swaps the taste axis** rather than suppressing it, on the methods where
+  milk is normal. Remembered per method, so it costs zero taps after the first.
+- **Water** is one question and one rule that fires once.
+
+**Plus** the bean shelf with roast-level-aware freshness, the journal with
+planned-vs-actual, 27 concept cards, CSV/JSON export, and all four widgets.
+
+### What to try first, in order
+
+1. **Onboarding** — pick *I buy it pre-ground* on the grinder screen. Watch what
+   changes: the copy, the Explorer's ordering, and later the advice.
+2. **The Explorer** — you land here, not on a recipe. Open a reference method
+   (cold brew) and check it reads as honest rather than broken.
+3. **Brew a French press.** Log it as bitter. You should be told to *steep less*,
+   not to grind coarser — that's the second rule table doing something different
+   from the first.
+4. **Brew a moka pot**, toggle *With milk*, and notice the taste axis changes from
+   sour ↔ bitter to harsh ↔ flat. Then check you get **notes about moka pots**, not
+   a diagnosis of your cup.
+5. **Brew a V60 twice** — apply the adjustment the first time, and see whether the
+   second one tells you it worked.
+
+### Deliberately not built
+
+Lesson content (a writing project — OQ-7), the recipe editor, insights, sync, and
+promotion of any tier 2 method to tier 1.
 
 ## What I still need from you
 
