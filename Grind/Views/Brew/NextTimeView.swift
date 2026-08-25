@@ -157,12 +157,23 @@ struct NextTimeView: View {
         .cardBackground()
     }
 
+    /// Colour encodes *which way the adjustment moves extraction*, so it teaches
+    /// the same thing here as it does on the taste axis: water for the changes
+    /// that pull extraction up out of sourness, heat for the ones that pull it
+    /// back from bitterness. Ratio changes are neither, so they stay neutral.
+    ///
+    /// Exhaustive on purpose — a new lever should force a decision about what it
+    /// means, not inherit a default.
     private func tint(for kind: Adjustment.Kind) -> Color {
         switch kind {
-        case .grindFiner: return Theme.water
-        case .grindCoarser, .hotterWater: return Theme.heat
-        case .lessWater, .moreWater: return Theme.ink
-        case .none: return Theme.target
+        case .grindFiner, .hotterWater, .steepLonger, .blendWater:
+            return Theme.water
+        case .grindCoarser, .coolerWater, .steepShorter:
+            return Theme.heat
+        case .lessWater, .moreWater, .tryDifferentMethod:
+            return Theme.ink
+        case .none:
+            return Theme.target
         }
     }
 }
