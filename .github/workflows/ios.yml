@@ -49,16 +49,34 @@ jobs:
 
       # Code signing off: this proves the code compiles and the widget extension
       # embeds, without needing a Team ID in CI.
+      #
+      # xcodebuild's default output buries a one-line compiler error under a
+      # thousand lines of frontend invocation, which makes a red build far more
+      # expensive to diagnose than it should be. Capture it and print only what
+      # is actually wrong.
       - name: Build for the simulator
         run: |
           set -o pipefail
-          xcodebuild build \
+          if ! xcodebuild build \
             -project Grind.xcodeproj \
             -scheme Grind \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcbeautify || xcodebuild build \
-            -project Grind.xcodeproj \
-            -scheme Grind \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO > build.log 2>&1
+          then
+            echo "::group::Compiler errors"
+            grep -E "error:" build.log | sed 's|/Users/runner/work/coffee/coffee/||' | sort -u | head -60
+            echo "::endgroup::"
+            echo "::group::Last 40 lines"
+            tail -40 build.log
+            echo "::endgroup::"
+            exit 1
+          fi
+          echo "Build succeeded."
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 5

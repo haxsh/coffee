@@ -90,6 +90,8 @@ struct OnboardingView: View {
                     grinder = nil
                 }
             }
+            .padding(.horizontal, 24)
+
             if buysPreGround {
                 Text("That's completely fine. We'll give you advice you can actually act on — temperature, timing and ratio — instead of telling you to grind finer.")
                     .font(.footnote)
@@ -97,7 +99,7 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
             }
-            .padding(.horizontal, 24)
+
             Spacer()
         }
         .padding(.top, 40)
