@@ -100,10 +100,27 @@ public enum Descriptor: String, Codable, Hashable, Sendable, CaseIterable {
     public static let siltSignals: Set<Descriptor> = [.silty, .muddy]
 
     /// Descriptors a milk drinker can actually use. Sour and juicy are not among
-    /// them — milk masks both.
+    /// them — milk masks both, and a chip nobody can honestly pick is worse than
+    /// one fewer chip.
     public static let milkVocabulary: [Descriptor] = [
         .sweet, .syrupy, .burnt, .ashy, .flat, .teaLike, .drying, .balanced
     ]
 
-    public static let blackVocabulary: [Descriptor] = allCases.filter { $0 != .burnt && $0 != .silty }
+    /// What to offer on the log screen.
+    ///
+    /// Scoped by method as well as by milk, because two of these terms describe
+    /// failures a given brewer physically cannot produce — and an unofferable
+    /// descriptor is worse than a missing one when a diagnosis rule depends on it.
+    public static func vocabulary(for method: BrewMethod, withMilk: Bool) -> [Descriptor] {
+        var terms = withMilk ? milkVocabulary : allCases
+        // Grit only reaches the cup through a mesh filter; paper catches it.
+        if method.param(.steepTime) == nil {
+            terms.removeAll { $0 == .silty }
+        }
+        // Scorching is a stovetop and pressure failure, not a pour-over one.
+        if !method.takesMilk {
+            terms.removeAll { $0 == .burnt }
+        }
+        return terms
+    }
 }

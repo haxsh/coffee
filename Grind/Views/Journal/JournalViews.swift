@@ -99,12 +99,30 @@ struct BrewDetailView: View {
             if let taste = brew.taste {
                 Section("How it tasted") {
                     LabeledContent("Rating", value: String(repeating: "★", count: taste.rating))
-                    LabeledContent("Taste", value: axisLabel(taste.extraction, low: "Sour", high: "Bitter"))
+                    if brew.withMilk {
+                        LabeledContent("Taste", value: axisLabel(taste.milkCharacter, low: "Harsh", high: "Flat"))
+                        LabeledContent("Milk", value: "Yes")
+                    } else {
+                        LabeledContent("Taste", value: axisLabel(taste.extraction, low: "Sour", high: "Bitter"))
+                    }
                     LabeledContent("Body", value: axisLabel(taste.strength, low: "Thin", high: "Heavy"))
                     if !taste.descriptors.isEmpty {
                         LabeledContent("Notes", value: taste.descriptors.map(\.label).joined(separator: ", "))
                     }
                     if let note = taste.note { Text(note).font(.callout) }
+                }
+            }
+
+            if brew.diagnosis == nil,
+               let method = BuiltInContent.method(id: brew.methodID),
+               method.supportTier == .guided {
+                Section("What we said") {
+                    Text(MethodNotes.forMethod(method).headline)
+                        .font(.callout)
+                        .foregroundStyle(Theme.muted)
+                    Button("See the notes for this method") {
+                        flow.methodNotes = MethodNotes.forMethod(method)
+                    }
                 }
             }
 

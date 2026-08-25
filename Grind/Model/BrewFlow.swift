@@ -14,10 +14,16 @@ final class BrewFlow {
     var session: BrewSession?
     /// Set when a brew finishes. Presents the log sheet.
     var brewToLog: Brew?
-    /// Set after logging. Presents Next Time.
+    /// Set after logging a tier 1 brew. Presents Next Time.
     var brewToDiagnose: Brew?
+    /// Set after logging a tier 2 brew. Presents Method Notes — a different
+    /// screen, deliberately, so the two can never be confused.
+    var methodNotes: MethodNotes?
     /// The globally-presented concept card.
     var conceptID: String?
+    /// A method the app suggested — presented so "try a French press" is a route
+    /// rather than a sentence.
+    var methodToOpen: BrewMethod?
     /// Which tab is showing.
     var selectedTab: RootTab = .brew
 

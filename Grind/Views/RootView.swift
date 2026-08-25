@@ -55,6 +55,12 @@ struct RootView: View {
         .sheet(item: $flow.brewToDiagnose) { brew in
             NextTimeView(brew: brew)
         }
+        .sheet(item: $flow.methodNotes) { notes in
+            MethodNotesView(notes: notes)
+        }
+        .sheet(item: $flow.methodToOpen) { method in
+            NavigationStack { MethodDetailView(method: method) }
+        }
         // The concept card opens over everything, including a running timer.
         .sheet(item: Binding(
             get: { flow.conceptID.flatMap(Concepts.concept(id:)) },

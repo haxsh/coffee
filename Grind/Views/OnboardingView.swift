@@ -10,7 +10,11 @@ struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var page = 0
     @State private var grinder: Grinder?
+    @State private var buysPreGround = false
+    @State private var water: WaterSource = .unknown
     @State private var experience: Experience = .starting
+
+    private let lastPage = 4
 
     enum Experience: String, CaseIterable {
         case starting = "Just started"
@@ -31,14 +35,15 @@ struct OnboardingView: View {
             TabView(selection: $page) {
                 welcome.tag(0)
                 grinderPage.tag(1)
-                experiencePage.tag(2)
-                ready.tag(3)
+                waterPage.tag(2)
+                experiencePage.tag(3)
+                ready.tag(4)
             }
             .tabViewStyle(.page)
             .indexViewStyle(.page(backgroundDisplayMode: .always))
 
-            Button(page == 3 ? "Let's brew one" : "Continue") {
-                if page == 3 { finish() } else { withAnimation { page += 1 } }
+            Button(page == lastPage ? "Show me what I could make" : "Continue") {
+                if page == lastPage { finish() } else { withAnimation { page += 1 } }
             }
             .buttonStyle(PrimaryButtonStyle())
             .padding(.horizontal, 24)
@@ -66,12 +71,47 @@ struct OnboardingView: View {
                    "So we can say \"18 → 16 clicks\" instead of \"a bit finer\".")
             VStack(spacing: 8) {
                 ForEach(Grinder.knownGrinders) { known in
-                    choice(known.displayName, selected: grinder?.model == known.model) {
+                    choice(known.displayName, selected: !buysPreGround && grinder?.model == known.model) {
                         grinder = known
+                        buysPreGround = false
                     }
                 }
-                choice("Something else, or pre-ground", selected: grinder?.model == Grinder.unknown.model) {
+                choice("A grinder, but not one of those",
+                       selected: !buysPreGround && grinder?.model == Grinder.unknown.model) {
                     grinder = .unknown
+                    buysPreGround = false
+                }
+                // A first-class answer, not an escape hatch. A large share of this
+                // market buys pre-ground, and onboarding that treats that as a
+                // failure state loses them on screen two. It also genuinely
+                // changes the advice they'll get.
+                choice("I buy it pre-ground", selected: buysPreGround) {
+                    buysPreGround = true
+                    grinder = nil
+                }
+            }
+            if buysPreGround {
+                Text("That's completely fine. We'll give you advice you can actually act on — temperature, timing and ratio — instead of telling you to grind finer.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.muted)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+            }
+            .padding(.horizontal, 24)
+            Spacer()
+        }
+        .padding(.top, 40)
+    }
+
+    /// One question, five options. The water *question* is in scope; a water
+    /// *feature* — calculators, mineral profiles — is explicitly not.
+    private var waterPage: some View {
+        VStack(spacing: 18) {
+            header("What water do you brew with?",
+                   "Coffee is about 98% water, and it's the one thing nobody thinks to check.")
+            VStack(spacing: 8) {
+                ForEach(WaterSource.allCases, id: \.self) { source in
+                    choice(source.label, selected: water == source) { water = source }
                 }
             }
             .padding(.horizontal, 24)
@@ -98,9 +138,17 @@ struct OnboardingView: View {
     private var ready: some View {
         page(
             title: "You're set",
-            body: "We'll start you on \(experience.recipe.name). It takes about \(BrewMath.formatSeconds(experience.recipe.totalSeconds)) — grab your scale.",
+            body: readyBody,
             icon: "checkmark.circle"
         )
+    }
+
+    private var readyBody: String {
+        let count = BuiltInContent.brewableMethods.count
+        if buysPreGround {
+            return "We'll show you \(count) ways to make coffee, with the ones that suit pre-ground first."
+        }
+        return "We'll show you \(count) ways to make coffee. If you're not sure where to start, \(experience.recipe.name) takes about \(BrewMath.formatSeconds(experience.recipe.totalSeconds))."
     }
 
     private func page(title: String, body: String, icon: String) -> some View {
@@ -144,7 +192,7 @@ struct OnboardingView: View {
     }
 
     private func finish() {
-        if let grinder { model.upsertGrinder(grinder) }
-        model.completeOnboarding()
+        if let grinder, !buysPreGround { model.upsertGrinder(grinder) }
+        model.completeOnboarding(waterSource: water, buysPreGround: buysPreGround)
     }
 }

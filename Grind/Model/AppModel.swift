@@ -120,8 +120,22 @@ final class AppModel {
         persist()
     }
 
-    func completeOnboarding() {
+    func completeOnboarding(waterSource: WaterSource = .unknown, buysPreGround: Bool = false) {
         data.hasOnboarded = true
+        data.waterSource = waterSource
+        data.buysPreGround = buysPreGround
+        persist()
+    }
+
+    /// Remembered per method, so the milk question costs zero taps in the steady
+    /// state: a moka drinker who always adds milk answers it once, ever.
+    func defaultMilk(forMethod methodID: String) -> Bool {
+        data.milkDefaults[methodID] ?? false
+    }
+
+    func rememberMilk(_ withMilk: Bool, forMethod methodID: String) {
+        guard data.milkDefaults[methodID] != withMilk else { return }
+        data.milkDefaults[methodID] = withMilk
         persist()
     }
 

@@ -38,17 +38,21 @@ public struct MethodProfile: Codable, Hashable, Sendable {
     /// 1 = you probably own it, 5 = a serious purchase.
     public let gearCost: Int
     /// 1 = hard to get wrong, 5 = punishes every mistake.
-    public let forgiveness: Int
+    ///
+    /// Named for the direction the numbers actually run. "Forgiveness" was the
+    /// original label and it pointed the opposite way to its own values, which is
+    /// the kind of thing that survives review and then quietly mislabels a meter.
+    public let fussiness: Int
     /// Taste doesn't rank, so it gets words instead of a meter.
     public let tastesLike: String
     /// Whether this method can be made without a grinder at all.
     public let worksWithPreGround: Bool
 
-    public init(effort: Int, time: Int, gearCost: Int, forgiveness: Int, tastesLike: String, worksWithPreGround: Bool) {
+    public init(effort: Int, time: Int, gearCost: Int, fussiness: Int, tastesLike: String, worksWithPreGround: Bool) {
         self.effort = effort
         self.time = time
         self.gearCost = gearCost
-        self.forgiveness = forgiveness
+        self.fussiness = fussiness
         self.tastesLike = tastesLike
         self.worksWithPreGround = worksWithPreGround
     }

@@ -19,7 +19,7 @@ public enum BuiltInContent {
         symbolName: "triangle",
         supportTier: .full,
         profile: MethodProfile(
-            effort: 4, time: 2, gearCost: 2, forgiveness: 4,
+            effort: 4, time: 2, gearCost: 2, fussiness: 4,
             tastesLike: "Clean and bright. Light body, and you taste where the coffee came from.",
             worksWithPreGround: false
         ),
@@ -45,7 +45,7 @@ public enum BuiltInContent {
         symbolName: "square",
         supportTier: .full,
         profile: MethodProfile(
-            effort: 1, time: 3, gearCost: 1, forgiveness: 1,
+            effort: 1, time: 3, gearCost: 1, fussiness: 1,
             tastesLike: "Heavy and round. Big body, low acidity, a little sediment at the bottom.",
             worksWithPreGround: true
         ),
@@ -69,7 +69,7 @@ public enum BuiltInContent {
         symbolName: "cylinder",
         supportTier: .guided,
         profile: MethodProfile(
-            effort: 2, time: 1, gearCost: 2, forgiveness: 1,
+            effort: 2, time: 1, gearCost: 2, fussiness: 1,
             tastesLike: "Clean like a pour-over but rounder. Concentrated, and very hard to make taste bad.",
             worksWithPreGround: true
         ),
@@ -91,7 +91,7 @@ public enum BuiltInContent {
         symbolName: "hexagon",
         supportTier: .guided,
         profile: MethodProfile(
-            effort: 2, time: 3, gearCost: 1, forgiveness: 3,
+            effort: 2, time: 3, gearCost: 1, fussiness: 3,
             tastesLike: "Strong, dark and syrupy. Not espresso, but the closest a stovetop gets. Takes milk well.",
             worksWithPreGround: true
         ),
@@ -117,7 +117,7 @@ public enum BuiltInContent {
         symbolName: "cylinder.split.1x2",
         supportTier: .guided,
         profile: MethodProfile(
-            effort: 2, time: 5, gearCost: 1, forgiveness: 2,
+            effort: 2, time: 5, gearCost: 1, fussiness: 2,
             tastesLike: "Deep, bittersweet and unmistakable. Built for milk and sugar, not for drinking black.",
             worksWithPreGround: true
         ),
@@ -139,7 +139,7 @@ public enum BuiltInContent {
         symbolName: "circle.bottomhalf.filled",
         supportTier: .guided,
         profile: MethodProfile(
-            effort: 3, time: 2, gearCost: 3, forgiveness: 2,
+            effort: 3, time: 2, gearCost: 3, fussiness: 2,
             tastesLike: "Clean like a V60 but a little rounder and more even. Easier to repeat.",
             worksWithPreGround: false
         ),
@@ -180,7 +180,7 @@ public enum BuiltInContent {
             id: "coldbrew", name: "Cold brew",
             blurb: "Coarse grounds, cold water, twelve hours of waiting. We can tell you about it, but a brew you taste tomorrow can't be coached one cup at a time.",
             symbolName: "snowflake",
-            profile: MethodProfile(effort: 1, time: 5, gearCost: 1, forgiveness: 1,
+            profile: MethodProfile(effort: 1, time: 5, gearCost: 1, fussiness: 1,
                                    tastesLike: "Sweet, smooth and very low in acidity. Almost no bitterness.",
                                    worksWithPreGround: true),
             conceptID: "about-cold-brew"
@@ -189,7 +189,7 @@ public enum BuiltInContent {
             id: "espresso", name: "Espresso",
             blurb: "Nine bars of pressure through a packed puck. A different set of variables and a different way of going wrong — it needs its own model, and it'll get one.",
             symbolName: "drop",
-            profile: MethodProfile(effort: 5, time: 1, gearCost: 5, forgiveness: 5,
+            profile: MethodProfile(effort: 5, time: 1, gearCost: 5, fussiness: 5,
                                    tastesLike: "Intense and syrupy. The base of every milk drink you order out.",
                                    worksWithPreGround: false),
             takesMilk: true,
@@ -199,7 +199,7 @@ public enum BuiltInContent {
             id: "instant", name: "Instant",
             blurb: "Already brewed, dried, and waiting for hot water. Where most people start — and there's an honest case for what changes when you move on.",
             symbolName: "bolt",
-            profile: MethodProfile(effort: 1, time: 1, gearCost: 1, forgiveness: 1,
+            profile: MethodProfile(effort: 1, time: 1, gearCost: 1, fussiness: 1,
                                    tastesLike: "Consistent, flat, and roasty. The floor is high and the ceiling is low.",
                                    worksWithPreGround: true),
             takesMilk: true,
@@ -209,7 +209,7 @@ public enum BuiltInContent {
             id: "chemex", name: "Chemex",
             blurb: "A pour-over with a much thicker filter. Very clean, very slow, and it looks like laboratory glassware because it more or less is.",
             symbolName: "hourglass",
-            profile: MethodProfile(effort: 4, time: 3, gearCost: 4, forgiveness: 3,
+            profile: MethodProfile(effort: 4, time: 3, gearCost: 4, fussiness: 3,
                                    tastesLike: "The cleanest cup on this list. Almost no body, all clarity.",
                                    worksWithPreGround: false),
             conceptID: "about-chemex"
@@ -218,7 +218,7 @@ public enum BuiltInContent {
             id: "siphon", name: "Siphon",
             blurb: "Vapour pressure pushes water up, gravity pulls the brew back down. Genuinely spectacular, genuinely impractical on a weekday.",
             symbolName: "flame",
-            profile: MethodProfile(effort: 5, time: 3, gearCost: 5, forgiveness: 4,
+            profile: MethodProfile(effort: 5, time: 3, gearCost: 5, fussiness: 4,
                                    tastesLike: "Clean and aromatic, with more body than a paper pour-over.",
                                    worksWithPreGround: false),
             conceptID: "about-siphon"
@@ -227,7 +227,7 @@ public enum BuiltInContent {
             id: "cezve", name: "Cezve / Turkish",
             blurb: "Powder-fine coffee simmered in a small pot and poured grounds and all. Among the oldest ways of making coffee still in daily use.",
             symbolName: "triangle.bottomhalf.filled",
-            profile: MethodProfile(effort: 3, time: 2, gearCost: 1, forgiveness: 3,
+            profile: MethodProfile(effort: 3, time: 2, gearCost: 1, fussiness: 3,
                                    tastesLike: "Thick, intense and a little gritty by design. Often spiced.",
                                    worksWithPreGround: true),
             conceptID: "about-cezve"

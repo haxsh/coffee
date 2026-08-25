@@ -103,7 +103,9 @@ public enum DiagnosisOutcome: Hashable, Sendable {
 /// Tier 2 output. Deliberately a different type from `Diagnosis` so that no view
 /// can render one as the other by accident — the shapes don't line up, which is
 /// the point.
-public struct MethodNotes: Codable, Hashable, Sendable {
+public struct MethodNotes: Codable, Hashable, Sendable, Identifiable {
+    public var id: String { methodID }
+
     public struct Note: Codable, Hashable, Sendable {
         public let title: String
         public let body: String

@@ -74,10 +74,8 @@ struct NextTimeView: View {
             .safeAreaInset(edge: .bottom) {
                 if let adjustment = diagnosis?.adjustment, adjustment.isActionable {
                     VStack(spacing: 6) {
-                        Button(applied ? "Saved for next time" : "Save this for next time") {
-                            model.applyAdjustment(adjustment, from: brew)
-                            applied = true
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        Button(primaryTitle(for: adjustment)) {
+                            apply(adjustment)
                         }
                         .buttonStyle(PrimaryButtonStyle(tint: applied ? Theme.target : Theme.water))
                         .disabled(applied)
@@ -94,6 +92,38 @@ struct NextTimeView: View {
                 }
             }
         }
+    }
+
+    /// Not every adjustment is a parameter to pre-fill. Water is a habit to
+    /// change once; a different brewer is somewhere to go. Offering "save this for
+    /// next time" for either would be a button that quietly does nothing.
+    private func primaryTitle(for adjustment: Adjustment) -> String {
+        if applied { return "Done" }
+        switch adjustment.kind {
+        case .blendWater: return "Got it, I'll try that"
+        case .tryDifferentMethod: return "Show me"
+        default: return "Save this for next time"
+        }
+    }
+
+    private func apply(_ adjustment: Adjustment) {
+        switch adjustment.kind {
+        case .blendWater:
+            // Fires once, then steps aside — the gate lives here rather than in
+            // the engine, which stays pure.
+            model.markWaterAdviceSeen()
+            applied = true
+        case .tryDifferentMethod:
+            guard let id = adjustment.suggestedMethodID,
+                  let method = BuiltInContent.method(id: id) else { return }
+            dismiss()
+            flow.methodToOpen = method
+            return
+        default:
+            model.applyAdjustment(adjustment, from: brew)
+            applied = true
+        }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     /// The moment the product proves itself — and the moment it has to be honest.

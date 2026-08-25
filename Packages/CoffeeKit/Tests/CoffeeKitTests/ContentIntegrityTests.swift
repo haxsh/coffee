@@ -139,7 +139,7 @@ final class ContentIntegrityTests: XCTestCase {
         for method in BuiltInContent.methods {
             let profile = method.profile
             for (name, value) in [("effort", profile.effort), ("time", profile.time),
-                                  ("gearCost", profile.gearCost), ("forgiveness", profile.forgiveness)] {
+                                  ("gearCost", profile.gearCost), ("fussiness", profile.fussiness)] {
                 XCTAssertTrue((1...5).contains(value), "\(method.name).\(name) = \(value)")
             }
             XCTAssertFalse(profile.tastesLike.isEmpty, "\(method.name) doesn't say what it tastes like")
@@ -163,6 +163,45 @@ final class ContentIntegrityTests: XCTestCase {
         XCTAssertEqual(milkMethods, ["espresso", "instant", "moka", "southindianfilter"])
         XCTAssertFalse(BuiltInContent.v60.takesMilk)
         XCTAssertFalse(BuiltInContent.frenchPress.takesMilk)
+    }
+
+    // MARK: - Vocabulary
+
+    /// The engine has a rule keyed on grit in the cup. If the log screen never
+    /// offers the descriptor that triggers it, the rule is dead code — which is
+    /// exactly what an earlier version of the vocabulary did.
+    func testSiltIsOfferableOnTheMethodWhoseRuleNeedsIt() {
+        let frenchPress = Descriptor.vocabulary(for: BuiltInContent.frenchPress, withMilk: false)
+        XCTAssertTrue(frenchPress.contains(.silty), "the silt rule would be unreachable")
+
+        let v60 = Descriptor.vocabulary(for: BuiltInContent.v60, withMilk: false)
+        XCTAssertFalse(v60.contains(.silty), "paper catches fines — grit isn't a pour-over failure")
+    }
+
+    func testScorchingIsOnlyOfferedWhereItCanHappen() {
+        XCTAssertTrue(Descriptor.vocabulary(for: BuiltInContent.moka, withMilk: true).contains(.burnt))
+        XCTAssertFalse(Descriptor.vocabulary(for: BuiltInContent.v60, withMilk: false).contains(.burnt))
+    }
+
+    /// Milk masks acidity, so the terms that describe it are not offered — a chip
+    /// nobody can honestly pick is worse than one fewer chip.
+    func testMilkVocabularyDropsTheTermsMilkMasks() {
+        let terms = Descriptor.vocabulary(for: BuiltInContent.moka, withMilk: true)
+        XCTAssertFalse(terms.contains(.sharp))
+        XCTAssertFalse(terms.contains(.juicy))
+        XCTAssertTrue(terms.contains(.flat))
+    }
+
+    /// Every rule that keys on a descriptor set must be reachable from at least
+    /// one method's offered vocabulary.
+    func testEveryDescriptorTriggerIsReachable() {
+        for descriptor in Descriptor.stalingSignals.union(Descriptor.siltSignals) {
+            let reachable = BuiltInContent.brewableMethods.contains { method in
+                Descriptor.vocabulary(for: method, withMilk: false).contains(descriptor)
+                    || (method.takesMilk && Descriptor.vocabulary(for: method, withMilk: true).contains(descriptor))
+            }
+            XCTAssertTrue(reachable, "'\(descriptor.rawValue)' triggers a rule but can never be selected")
+        }
     }
 
     /// Every brewable method offers something gentle to start on. A first attempt

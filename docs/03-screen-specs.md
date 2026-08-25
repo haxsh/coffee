@@ -414,7 +414,9 @@ the app can do for each answer.
 ### Layout
 - **Comparable rows, not a grid of icons.** A grid looks better and answers nothing.
   Each row carries the five axes a beginner actually decides on: **effort, time,
-  gear cost, forgiveness, and what the cup tastes like.** Four are ordinal and render
+  gear cost, fussiness, and what the cup tastes like.** (Named *fussiness* rather
+  than *forgiveness* because the numbers run 1 = hard to get wrong, 5 = punishes
+  every mistake — the original label pointed the opposite way to its own values.) Four are ordinal and render
   as compact meters; the fifth is a short phrase, because taste doesn't rank.
 - **Tier is visible but never framed as a lock.** A reference method reads *"we can
   tell you about this one"* — not a padlock. It isn't withheld, it's undescribed.

@@ -26,6 +26,9 @@ struct LogBrewView: View {
     @State private var rating = 4
     @State private var extraction = 0
     @State private var strength = 0
+    @State private var milkCharacter = 0
+    @State private var withMilk = false
+    @State private var loaded = false
     @State private var descriptors: Set<Descriptor> = []
     @State private var note = ""
     @State private var showingActuals = false
@@ -40,13 +43,31 @@ struct LogBrewView: View {
                         RatingControl(rating: $rating)
                     }
 
-                    AxisPicker(
-                        title: "Taste",
-                        lowLabel: "Sour",
-                        centreLabel: "Balanced",
-                        highLabel: "Bitter",
-                        value: $extraction
-                    )
+                    milkToggle
+
+                    // The axis is *swapped*, not suppressed. Milk fat and protein
+                    // bind to exactly the compounds that read as acidity and
+                    // bitterness, so a milk drinker cannot place a cup on sour ↔
+                    // bitter. Asking anyway would take a tap and discard the
+                    // answer — same position, same one tap, a question that can
+                    // actually be answered.
+                    if withMilk {
+                        AxisPicker(
+                            title: "Taste",
+                            lowLabel: "Harsh",
+                            centreLabel: "Smooth",
+                            highLabel: "Flat",
+                            value: $milkCharacter
+                        )
+                    } else {
+                        AxisPicker(
+                            title: "Taste",
+                            lowLabel: "Sour",
+                            centreLabel: "Balanced",
+                            highLabel: "Bitter",
+                            value: $extraction
+                        )
+                    }
 
                     AxisPicker(
                         title: "Body",
@@ -67,17 +88,56 @@ struct LogBrewView: View {
             .navigationTitle("Log this brew")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                Button("Save & see what to change") { save() }
+                Button(method?.canDiagnose == true ? "Save & see what to change" : "Save this brew") { save() }
                     .buttonStyle(PrimaryButtonStyle())
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .background(.bar)
             }
         }
+        .onAppear(perform: loadDefaults)
         // Dismissing the sheet still saves. Losing a log loses the loop.
         .onDisappear {
             guard !saved else { return }
             persist()
+        }
+    }
+
+    @ViewBuilder private var milkToggle: some View {
+        if method?.takesMilk == true {
+            Toggle(isOn: $withMilk) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("With milk").font(.subheadline.weight(.medium))
+                    Text("Changes what we can read from the taste")
+                        .font(.caption)
+                        .foregroundStyle(Theme.muted)
+                }
+            }
+            .tint(Theme.water)
+            .onChange(of: withMilk) { _, value in
+                // Drop anything from the other vocabulary rather than silently
+                // carrying a descriptor the new axis can't interpret.
+                guard let method else { return }
+                descriptors = descriptors.intersection(
+                    Set(Descriptor.vocabulary(for: method, withMilk: value))
+                )
+                model.rememberMilk(value, forMethod: method.id)
+            }
+        }
+    }
+
+    private var method: BrewMethod? { BuiltInContent.method(id: brew.methodID) }
+
+    private var vocabulary: [Descriptor] {
+        guard let method else { return Descriptor.milkVocabulary }
+        return Descriptor.vocabulary(for: method, withMilk: withMilk)
+    }
+
+    private func loadDefaults() {
+        guard !loaded else { return }
+        loaded = true
+        if let method, method.takesMilk {
+            withMilk = model.defaultMilk(forMethod: method.id)
         }
     }
 
@@ -91,7 +151,7 @@ struct LogBrewView: View {
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(Descriptor.allCases, id: \.self) { descriptor in
+                    ForEach(vocabulary, id: \.self) { descriptor in
                         chip(descriptor)
                     }
                 }
@@ -204,14 +264,18 @@ struct LogBrewView: View {
     @discardableResult
     private func persist() -> Brew {
         var updated = brew
+        updated.withMilk = withMilk
         updated.taste = TasteRecord(
             rating: rating,
             extraction: extraction,
             strength: strength,
+            milkCharacter: milkCharacter,
             descriptors: Array(descriptors),
             note: note.isEmpty ? nil : note
         )
-        updated.diagnosis = model.diagnose(updated)
+        // Only a tier 1 method produces a diagnosis; the outcome decides, not the
+        // screen, so a tier 2 method can't be routed into one by accident.
+        updated.diagnosis = model.evaluate(updated)?.diagnosis
         model.updateBrew(updated)
         return updated
     }
@@ -220,7 +284,15 @@ struct LogBrewView: View {
         saved = true
         let updated = persist()
         dismiss()
-        // Handing straight to Next Time is the whole point of the screen.
-        flow.brewToDiagnose = updated
+
+        guard let outcome = model.evaluate(updated) else { return }
+        switch outcome {
+        case .diagnosis:
+            flow.brewToDiagnose = updated
+        case let .methodNotes(notes):
+            flow.methodNotes = notes
+        case .unsupported:
+            break
+        }
     }
 }

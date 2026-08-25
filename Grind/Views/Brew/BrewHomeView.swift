@@ -9,20 +9,29 @@ struct BrewHomeView: View {
     @Environment(BrewFlow.self) private var flow
     @State private var setupRecipe: Recipe?
     @State private var showingProfile = false
+    @State private var exploring = false
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    brewAgainCard
-                    recipeSection
-                    methodSection
+            Group {
+                if showExplorer {
+                    MethodExplorerView()
+                } else {
+                    continueState
                 }
-                .padding(20)
             }
-            .background(Theme.paper)
-            .navigationTitle("Brew")
+            .navigationTitle(showExplorer ? "Explore" : "Brew")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    // One root, two states — never a modal, never buried. Which
+                    // one opens is decided by whether the user has brewed before,
+                    // which is the two-loop model expressed as navigation.
+                    Button(showExplorer ? "Brewing" : "Explore") {
+                        withAnimation(.easeInOut(duration: 0.2)) { exploring.toggle() }
+                    }
+                    .disabled(model.data.brews.isEmpty)
+                    .opacity(model.data.brews.isEmpty ? 0 : 1)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingProfile = true } label: {
                         Image(systemName: "person.crop.circle")
@@ -34,12 +43,84 @@ struct BrewHomeView: View {
             .sheet(item: $setupRecipe) { recipe in
                 BrewSetupView(recipe: recipe)
             }
-            // Widget taps and Control Centre presses land here.
             .onReceive(NotificationCenter.default.publisher(for: .grindStartBrewRequested)) { note in
                 let id = note.userInfo?["recipeID"] as? String
                 setupRecipe = model.recipe(id: id) ?? model.suggestedRecipe
             }
         }
+    }
+
+    /// A user with no history has nothing to continue, and their real first
+    /// question is "what should I even try?" — so the same tab answers that
+    /// instead.
+    private var showExplorer: Bool { model.data.brews.isEmpty || exploring }
+
+    private var continueState: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                brewAgainCard
+                yourMethods
+                exploreCard
+            }
+            .padding(20)
+        }
+        .background(Theme.paper)
+    }
+
+    /// Progress toward the handoff, shown per method. Never frames trying
+    /// something else as a failure — exploring is the other half of the product.
+    private var yourMethods: some View {
+        let counts = Dictionary(grouping: model.data.brews, by: \.methodID)
+            .mapValues(\.count)
+            .sorted { $0.value > $1.value }
+        return VStack(alignment: .leading, spacing: 10) {
+            if !counts.isEmpty {
+                Text("Your methods").sectionLabel()
+                ForEach(counts, id: \.key) { entry in
+                    if let method = BuiltInContent.method(id: entry.key) {
+                        NavigationLink { MethodDetailView(method: method) } label: {
+                            HStack {
+                                Text(method.name).font(.headline).foregroundStyle(Theme.ink)
+                                Spacer()
+                                Text("\(entry.value) brew\(entry.value == 1 ? "" : "s")")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(Theme.muted)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption).foregroundStyle(Theme.faint)
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .cardBackground()
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private var exploreCard: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) { exploring = true }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "square.grid.2x2")
+                    .font(.title3)
+                    .foregroundStyle(Theme.water)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Try something else")
+                        .font(.headline).foregroundStyle(Theme.ink)
+                    Text("\(BuiltInContent.methods.count) ways to make coffee, compared honestly")
+                        .font(.footnote).foregroundStyle(Theme.muted)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.faint)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .cardBackground()
+        }
+        .buttonStyle(.plain)
     }
 
     private var brewAgainCard: some View {
@@ -88,59 +169,4 @@ struct BrewHomeView: View {
         .buttonStyle(.plain)
     }
 
-    private var recipeSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("V60 recipes").sectionLabel()
-            ForEach(model.allRecipes.filter { $0.methodID == BuiltInContent.v60.id }) { recipe in
-                Button { setupRecipe = recipe } label: {
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(recipe.name).font(.headline).foregroundStyle(Theme.ink)
-                            Text(recipe.blurb)
-                                .font(.footnote)
-                                .foregroundStyle(Theme.muted)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
-                        Spacer()
-                        Text(BrewMath.formatSeconds(recipe.totalSeconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(Theme.faint)
-                    }
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .cardBackground()
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
-    /// Locked methods are shown with a badge, never hidden. Hiding paid content
-    /// means users never learn the app has it.
-    private var methodSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Other methods").sectionLabel()
-            ForEach(BuiltInContent.methods.filter { !$0.canDiagnose && $0.id != BuiltInContent.v60.id }) { method in
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(method.name).font(.headline).foregroundStyle(Theme.muted)
-                        Text(method.blurb)
-                            .font(.footnote)
-                            .foregroundStyle(Theme.faint)
-                            .lineLimit(2)
-                    }
-                    Spacer()
-                    Text(method.supportTier.label)
-                        .font(.caption2)
-                        .foregroundStyle(Theme.faint)
-                }
-                .padding(14)
-                .frame(maxWidth: .infinity)
-                .cardBackground()
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(method.name), \(method.supportTier.label)")
-            }
-        }
-    }
 }
