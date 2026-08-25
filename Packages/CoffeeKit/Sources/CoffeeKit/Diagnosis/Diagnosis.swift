@@ -4,7 +4,15 @@ import Foundation
 /// easiest one, two variables move at once, and the result is uninterpretable.
 public struct Adjustment: Codable, Hashable, Sendable {
     public enum Kind: String, Codable, Sendable {
-        case grindFiner, grindCoarser, lessWater, moreWater, hotterWater, none
+        case grindFiner, grindCoarser
+        case lessWater, moreWater
+        case hotterWater, coolerWater
+        case steepLonger, steepShorter
+        case blendWater
+        /// The honest answer when the user has no grinder and the grind they bought
+        /// simply doesn't suit this brewer: change the brewer, not the technique.
+        case tryDifferentMethod
+        case none
 
         public var isGrindChange: Bool { self == .grindFiner || self == .grindCoarser }
     }
@@ -19,6 +27,9 @@ public struct Adjustment: Codable, Hashable, Sendable {
     public let newValue: Double?
     /// The grinder setting to pre-fill, in the user's units.
     public let newGrinderSetting: Double?
+    /// For `.tryDifferentMethod` — the method being suggested, so the UI can route
+    /// straight into it rather than making the user go and find it.
+    public let suggestedMethodID: String?
 
     public init(
         kind: Kind,
@@ -26,7 +37,8 @@ public struct Adjustment: Codable, Hashable, Sendable {
         detail: String,
         paramKey: BrewParamKey? = nil,
         newValue: Double? = nil,
-        newGrinderSetting: Double? = nil
+        newGrinderSetting: Double? = nil,
+        suggestedMethodID: String? = nil
     ) {
         self.kind = kind
         self.headline = headline
@@ -34,6 +46,7 @@ public struct Adjustment: Codable, Hashable, Sendable {
         self.paramKey = paramKey
         self.newValue = newValue
         self.newGrinderSetting = newGrinderSetting
+        self.suggestedMethodID = suggestedMethodID
     }
 
     public var isActionable: Bool { kind != .none }
@@ -46,6 +59,11 @@ public struct Adjustment: Codable, Hashable, Sendable {
         case .lessWater: return "using less water"
         case .moreWater: return "using more water"
         case .hotterWater: return "brewing hotter"
+        case .coolerWater: return "brewing cooler"
+        case .steepLonger: return "steeping longer"
+        case .steepShorter: return "steeping shorter"
+        case .blendWater: return "changing your water"
+        case .tryDifferentMethod: return "switching brewer"
         case .none: return "changing nothing"
         }
     }
@@ -55,6 +73,61 @@ public struct Adjustment: Codable, Hashable, Sendable {
         headline: "Change nothing",
         detail: "Brew it exactly the same way."
     )
+}
+
+/// What the engine hands back.
+///
+/// Tier enforcement is structural rather than conventional: a `.guided` method
+/// **cannot** produce a `Diagnosis`, because there is no path through this type
+/// that lets it. A screen can't opt a method into a precision the engine never
+/// produced, because the value it would need doesn't exist.
+public enum DiagnosisOutcome: Hashable, Sendable {
+    /// Tier 1 only.
+    case diagnosis(Diagnosis)
+    /// Tier 2. Observations about the *brewer*, never about this cup.
+    case methodNotes(MethodNotes)
+    /// Tier 3. There was no brew to reason about.
+    case unsupported
+
+    public var diagnosis: Diagnosis? {
+        if case let .diagnosis(value) = self { return value }
+        return nil
+    }
+
+    public var methodNotes: MethodNotes? {
+        if case let .methodNotes(value) = self { return value }
+        return nil
+    }
+}
+
+/// Tier 2 output. Deliberately a different type from `Diagnosis` so that no view
+/// can render one as the other by accident — the shapes don't line up, which is
+/// the point.
+public struct MethodNotes: Codable, Hashable, Sendable {
+    public struct Note: Codable, Hashable, Sendable {
+        public let title: String
+        public let body: String
+        public let conceptID: String?
+
+        public init(title: String, body: String, conceptID: String? = nil) {
+            self.title = title
+            self.body = body
+            self.conceptID = conceptID
+        }
+    }
+
+    public let methodID: String
+    /// Names the limit out loud. Saying "we don't diagnose this yet" is what buys
+    /// the trust; a confident paragraph that turns out to be generic costs more
+    /// than silence.
+    public let headline: String
+    public let notes: [Note]
+
+    public init(methodID: String, headline: String, notes: [Note]) {
+        self.methodID = methodID
+        self.headline = headline
+        self.notes = notes
+    }
 }
 
 public struct Diagnosis: Codable, Hashable, Sendable {

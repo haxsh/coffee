@@ -121,7 +121,7 @@ struct BrewHomeView: View {
     private var methodSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Other methods").sectionLabel()
-            ForEach(BuiltInContent.lockedMethods) { method in
+            ForEach(BuiltInContent.methods.filter { !$0.canDiagnose && $0.id != BuiltInContent.v60.id }) { method in
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(method.name).font(.headline).foregroundStyle(Theme.muted)
@@ -131,15 +131,15 @@ struct BrewHomeView: View {
                             .lineLimit(2)
                     }
                     Spacer()
-                    Image(systemName: "lock.fill")
-                        .font(.caption)
+                    Text(method.supportTier.label)
+                        .font(.caption2)
                         .foregroundStyle(Theme.faint)
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity)
                 .cardBackground()
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(method.name), not yet available")
+                .accessibilityLabel("\(method.name), \(method.supportTier.label)")
             }
         }
     }

@@ -24,8 +24,40 @@ struct AppData: Codable {
     var lastBeanID: UUID?
     var hasOnboarded: Bool = false
     var usesCelsius: Bool = true
+    /// What the user brews with. Asked once; frozen onto each brew.
+    var waterSource: WaterSource = .unknown
+    /// Whether grind is a lever at all for this user. Decides what advice the
+    /// engine is allowed to give.
+    var buysPreGround: Bool = false
+    /// The water explanation interrupts once, then gets out of the way.
+    var hasSeenWaterAdvice: Bool = false
+    /// Remembered per method so the milk question costs zero taps in the steady state.
+    var milkDefaults: [String: Bool] = [:]
 
     static let empty = AppData()
+
+    /// Documents written before water, pre-ground and milk existed decode with
+    /// sensible defaults rather than failing. Swift's synthesised decoder ignores
+    /// property defaults for missing keys, so every additive change needs this.
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        brews = try c.decodeIfPresent([Brew].self, forKey: .brews) ?? []
+        beans = try c.decodeIfPresent([Bean].self, forKey: .beans) ?? []
+        grinders = try c.decodeIfPresent([Grinder].self, forKey: .grinders) ?? []
+        selectedGrinderID = try c.decodeIfPresent(UUID.self, forKey: .selectedGrinderID)
+        userRecipes = try c.decodeIfPresent([Recipe].self, forKey: .userRecipes) ?? []
+        pendingAdjustments = try c.decodeIfPresent([String: PendingAdjustment].self, forKey: .pendingAdjustments) ?? [:]
+        lastRecipeID = try c.decodeIfPresent(String.self, forKey: .lastRecipeID)
+        lastBeanID = try c.decodeIfPresent(UUID.self, forKey: .lastBeanID)
+        hasOnboarded = try c.decodeIfPresent(Bool.self, forKey: .hasOnboarded) ?? false
+        usesCelsius = try c.decodeIfPresent(Bool.self, forKey: .usesCelsius) ?? true
+        waterSource = try c.decodeIfPresent(WaterSource.self, forKey: .waterSource) ?? .unknown
+        buysPreGround = try c.decodeIfPresent(Bool.self, forKey: .buysPreGround) ?? false
+        hasSeenWaterAdvice = try c.decodeIfPresent(Bool.self, forKey: .hasSeenWaterAdvice) ?? false
+        milkDefaults = try c.decodeIfPresent([String: Bool].self, forKey: .milkDefaults) ?? [:]
+    }
 }
 
 /// Reads and writes the document. Atomic, offline, and never on the critical

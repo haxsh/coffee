@@ -191,7 +191,8 @@ struct BrewSetupView: View {
             bean: model.bean(id: beanID),
             grinder: grinder,
             grinderSetting: grinder == nil ? nil : grinderSetting,
-            adjustedFromBrewID: pending?.sourceBrewID
+            adjustedFromBrewID: pending?.sourceBrewID,
+            waterSource: model.data.waterSource
         )
 
         model.clearPendingAdjustment(forMethod: recipe.methodID)

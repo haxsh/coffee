@@ -35,6 +35,7 @@ final class BrewSession {
     let grinderSetting: Double?
     let adjustedFromBrewID: UUID?
     let plannedParams: BrewParameters
+    let waterSource: WaterSource
 
     let totalWater: Double
     let cumulativeTargets: [Double]
@@ -63,7 +64,8 @@ final class BrewSession {
         bean: Bean? = nil,
         grinder: Grinder? = nil,
         grinderSetting: Double? = nil,
-        adjustedFromBrewID: UUID? = nil
+        adjustedFromBrewID: UUID? = nil,
+        waterSource: WaterSource = .unknown
     ) {
         self.recipe = recipe
         self.method = method
@@ -76,6 +78,7 @@ final class BrewSession {
         self.grinderID = grinder?.id
         self.grinderSetting = grinderSetting
         self.adjustedFromBrewID = adjustedFromBrewID
+        self.waterSource = waterSource
 
         let water = BrewMath.water(
             dose: params.value(.dose, default: recipe.dose),
@@ -220,6 +223,7 @@ final class BrewSession {
             grinderSetting: grinderSetting,
             beanRestDays: beanRestDays,
             beanFreshness: beanFreshness,
+            waterSource: waterSource,
             actualTotalSeconds: Int(elapsed.rounded()),
             adjustedFromBrewID: adjustedFromBrewID
         )

@@ -127,21 +127,38 @@ final class AppModel {
 
     // MARK: - The loop
 
-    func diagnose(_ brew: Brew) -> Diagnosis? {
+    /// The engine's full answer, including the tier 2 and tier 3 cases. The UI
+    /// routes on this rather than on the method, so a screen cannot promote a
+    /// method into a diagnosis the engine never produced.
+    func evaluate(_ brew: Brew) -> DiagnosisOutcome? {
         guard let taste = brew.taste,
               let method = BuiltInContent.method(id: brew.methodID)
         else { return nil }
 
-        return engine.diagnose(DiagnosisInput(
+        return engine.evaluate(DiagnosisInput(
             taste: taste,
             method: method,
             params: brew.params,
             actualTotalSeconds: brew.actualTotalSeconds,
             beanFreshness: brew.beanFreshness,
             beanRestDays: brew.beanRestDays,
-            grinder: data.grinders.first { $0.id == brew.grinderID } ?? selectedGrinder,
-            grinderSetting: brew.grinderSetting
+            grindControl: grindControl(for: brew),
+            waterSource: brew.waterSource,
+            withMilk: brew.withMilk,
+            hasSeenWaterAdvice: data.hasSeenWaterAdvice
         ))
+    }
+
+    func diagnose(_ brew: Brew) -> Diagnosis? {
+        evaluate(brew)?.diagnosis
+    }
+
+    /// What this user could actually change about their grind on this brew.
+    private func grindControl(for brew: Brew) -> GrindControl {
+        if data.buysPreGround { return .preGround }
+        let grinder = data.grinders.first { $0.id == brew.grinderID } ?? selectedGrinder
+        guard let grinder, let setting = brew.grinderSetting else { return .uncalibrated }
+        return .calibrated(grinder, setting: setting)
     }
 
     /// The payoff: did the change the user made actually help?
@@ -160,6 +177,26 @@ final class AppModel {
             adjustment: adjustment
         )
         persist()
+    }
+
+    /// The water rule interrupts once and then steps aside. Recording that here
+    /// rather than in the engine keeps the engine pure and the gate testable.
+    func markWaterAdviceSeen() {
+        guard !data.hasSeenWaterAdvice else { return }
+        data.hasSeenWaterAdvice = true
+        persist()
+    }
+
+    /// The exploration loop's progress object. Derived from the journal, never
+    /// stored — a stored copy could disagree with it after a deleted brew.
+    var methodsTried: Set<String> {
+        Set(data.brews.map(\.methodID))
+    }
+
+    /// The north star, made visible: the most brews logged on any single method.
+    var handoffProgress: Int {
+        Dictionary(grouping: data.brews, by: \.methodID)
+            .values.map(\.count).max() ?? 0
     }
 
     func clearPendingAdjustment(forMethod methodID: String) {

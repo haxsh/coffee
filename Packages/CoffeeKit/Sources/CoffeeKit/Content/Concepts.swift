@@ -276,14 +276,17 @@ public enum Concepts {
             shortDefinition: "Coffee is 98% water, and the minerals in yours decide how much flavour it can carry.",
             card: """
             Minerals in water — magnesium and calcium mostly — actively bind to flavour compounds \
-            and pull them out of the grounds. Distilled water, with none of them, makes flat, \
-            hollow coffee no matter how good the beans are. Very hard water goes chalky and dull.
+            and pull them out of the grounds. Water with none of them makes flat, hollow coffee \
+            no matter how good the beans are. Very hard water goes chalky and dull.
 
-            This is the variable to look at when your brewing is dialled in and the cup still \
-            isn't enjoyable: both axes balanced, nothing left to adjust, and it's still \
+            If you brew with RO or purifier water, that's the pure end of this, and it's the one \
+            case worth doing something about: **try roughly seventy percent RO to thirty percent \
+            tap.** It costs nothing, and it's usually the difference between coffee that stays \
+            thin whatever you do to the grinder and coffee that works.
+
+            Otherwise this is the variable to look at when your brewing is dialled in and the cup \
+            still isn't enjoyable — both axes balanced, nothing left to adjust, and it's still \
             disappointing.
-
-            A cheap filter jug is usually enough to find out whether it's your problem.
             """,
             relatedConceptIDs: ["extraction"]
         ),
@@ -304,6 +307,224 @@ public enum Concepts {
             When you switch between them, expect to re-dial. It isn't your technique slipping.
             """,
             relatedConceptIDs: ["degassing", "water-temperature"]
+        ),
+
+        Concept(
+            id: "milk",
+            term: "Milk in coffee",
+            shortDefinition: "Fat and protein change the texture, and hide the acidity your palate would otherwise read.",
+            card: """
+            Milk does two things to coffee. Fat coats the tongue and rounds everything off; \
+            protein gives you the foam and the body. Together they bind to a lot of the same \
+            compounds that read as brightness and bitterness when you drink coffee black.
+
+            That's why a milk coffee is hard to judge on sour-versus-bitter — the milk has \
+            flattened the very thing you'd be tasting for. What you *can* still tell is whether \
+            it's harsh and burnt at one end or thin and washed-out at the other, which is what \
+            we ask you instead.
+
+            For texture, fat and protein content matter more than the brand. Full-cream and \
+            toned milk steam and froth better than double-toned; fresh milk behaves differently \
+            from UHT, which has already been heated hard once. If you have a choice — Amul, \
+            Nandini, Country Delight, whatever's local — pick on fat content first and taste second.
+            """,
+            relatedConceptIDs: ["strength", "roast-level"]
+        ),
+
+        Concept(
+            id: "immersion",
+            term: "Immersion brewing",
+            shortDefinition: "The coffee sits in the water the whole time, instead of water passing through it.",
+            card: """
+            A French press, an AeroPress and a cup of cold brew are all immersion: the grounds and \
+            the water stay together until you separate them. A pour-over is the opposite — water \
+            passes through and leaves.
+
+            The practical difference is which lever matters most. In a pour-over, grind mostly \
+            controls things, because it sets how fast the water gets through. In immersion the \
+            water isn't going anywhere, so **time is the first lever** and grind is the second.
+
+            That's also why immersion is more forgiving. Thirty seconds either side of four \
+            minutes is a small change; the same thirty seconds on a V60 is most of the brew.
+            """,
+            relatedConceptIDs: ["extraction", "fines"]
+        ),
+
+        Concept(
+            id: "fines",
+            term: "Fines",
+            shortDefinition: "The dust-sized particles in any grind — they over-extract fast and end up in the cup.",
+            card: """
+            No grinder produces one particle size. Alongside the grounds you wanted there's always \
+            a fraction of near-powder, and it behaves differently: enormous surface area, so it \
+            gives up everything it has almost immediately.
+
+            In a paper filter most of it gets caught. In a French press it doesn't — a metal mesh \
+            lets fines straight through, which is where the silt at the bottom of the cup comes \
+            from, and some of the bitterness with it.
+
+            Two things reduce it. Grind a little coarser, and don't force the plunger down — \
+            pressing hard pushes fines through the mesh that would otherwise have settled. \
+            Or don't plunge at all: let them sink for a few minutes and pour off the top.
+            """,
+            relatedConceptIDs: ["immersion", "grind-size", "burr-grinder"]
+        ),
+
+        Concept(
+            id: "chicory",
+            term: "Chicory",
+            shortDefinition: "A roasted root blended into South Indian filter coffee — not an adulterant, a choice.",
+            card: """
+            Chicory root, roasted and ground, is blended with coffee in most South Indian filter \
+            coffee, usually somewhere between 10 and 30 percent. It has no caffeine and it isn't \
+            coffee, but it isn't padding either.
+
+            What it does is textural. Chicory is more soluble than coffee and gives a thicker, \
+            darker decoction with a distinctive bittersweet edge — which is exactly what stands up \
+            to a lot of hot milk and sugar. A filter coffee made with 100 percent coffee often \
+            tastes thin in comparison, which surprises people who assumed the chicory was the \
+            compromise.
+
+            More chicory means a stronger-looking, faster-dripping decoction that can go flat and \
+            slightly woody if you push it. It's a dial, not a defect.
+            """,
+            relatedConceptIDs: ["milk", "extraction"]
+        ),
+
+        Concept(
+            id: "pre-ground",
+            term: "Pre-ground coffee",
+            shortDefinition: "Perfectly workable — but it fixes one variable, so the advice has to come from the others.",
+            card: """
+            Pre-ground coffee stales faster than whole beans, because grinding multiplies the \
+            surface exposed to air. That's the usual argument for a grinder, and it's true.
+
+            The more immediate thing is that grind is the strongest lever you have over how a cup \
+            tastes, and buying pre-ground fixes it. You still have water temperature, contact time, \
+            ratio and dose, and those are enough to make good coffee — you're just working with \
+            four dials instead of five.
+
+            It also means **matching the method to the grind you've got** rather than the other way \
+            round. Most pre-ground sold in India is fine, aimed at filter coffee and moka pots, and \
+            it will over-extract in a French press and stall a V60. If your coffee is bitter in a \
+            pour-over and you can't grind coarser, the honest fix is a different brewer, not a \
+            different technique.
+            """,
+            relatedConceptIDs: ["grind-size", "burr-grinder", "staling"]
+        ),
+
+        Concept(
+            id: "about-cold-brew",
+            term: "Cold brew",
+            shortDefinition: "Coarse grounds steeped in cold water for twelve hours or more.",
+            card: """
+            No heat at all. Coarse coffee, cold water, roughly 1:8 for a concentrate you'll dilute, \
+            and twelve to eighteen hours in the fridge. Strain, and it keeps for about a week.
+
+            Cold water pulls out much less of the acidity and bitterness than hot water does, so \
+            the result is sweet, smooth and very low in acidity. Some people find it flat for the \
+            same reason.
+
+            It's the easiest thing on this list to make and the hardest for us to help you improve, \
+            because you taste the result half a day after every decision. That's why we describe it \
+            rather than coach it — advice you can only test once a day isn't much of a loop.
+            """,
+            relatedConceptIDs: ["immersion", "extraction"]
+        ),
+
+        Concept(
+            id: "about-espresso",
+            term: "Espresso",
+            shortDefinition: "Around nine bars of pressure forcing water through a packed puck in under half a minute.",
+            card: """
+            Everything is compressed: about 18 grams in, 36 out, in roughly 28 seconds. The \
+            variables are different from filter coffee — dose, yield, time, pressure, temperature, \
+            and how evenly you packed the basket — and so are the failure modes.
+
+            It's also the base of nearly every milk drink you've ordered in a café, which is why \
+            it's the method most people want and the one with the highest cost of entry. A machine \
+            and a grinder that can actually do it is a serious purchase.
+
+            We describe it rather than coach it because espresso needs its own diagnosis model, not \
+            a translation of the filter one. Doing that badly would be worse than not doing it.
+            """,
+            relatedConceptIDs: ["milk", "extraction"]
+        ),
+
+        Concept(
+            id: "about-instant",
+            term: "Instant coffee",
+            shortDefinition: "Coffee that was already brewed, then dried. You're rehydrating it, not making it.",
+            card: """
+            Instant is brewed at a factory, then freeze-dried or spray-dried into granules. Adding \
+            water rehydrates it. Nothing you do at the kettle is extraction, which is why none of \
+            the advice in this app applies to it.
+
+            It is genuinely good at one thing: consistency. It tastes the same every time, takes \
+            thirty seconds, and needs no equipment.
+
+            What you gain by moving on isn't complexity, it's range. The same beans through a \
+            French press cost you four minutes and a press you can buy for a few hundred rupees, \
+            and the difference is not subtle. If you're going to try one thing after instant, that's \
+            the one — it's the cheapest, most forgiving step up available.
+            """,
+            relatedConceptIDs: ["immersion", "staling"]
+        ),
+
+        Concept(
+            id: "about-chemex",
+            term: "Chemex",
+            shortDefinition: "A pour-over with a much thicker filter, and the cleanest cup you can make.",
+            card: """
+            The brewer is one piece of glass, and the filters are markedly thicker than a V60's. \
+            That thickness catches more oils and more fines, which is the whole point: the result \
+            is exceptionally clean and light-bodied, with the flavours very clearly separated.
+
+            The trade-off is speed and margin. Thicker paper drains more slowly, so a grind that \
+            works on a V60 will often stall a Chemex, and the brews are long. It rewards a good \
+            grinder more than most methods do.
+
+            Technique-wise it's a V60 with more patience, which is why it's a natural second \
+            pour-over rather than a first one.
+            """,
+            relatedConceptIDs: ["drawdown", "fines", "grind-size"]
+        ),
+
+        Concept(
+            id: "about-siphon",
+            term: "Siphon",
+            shortDefinition: "Vapour pressure pushes water up into the grounds; taking the heat away pulls it back down.",
+            card: """
+            Two glass chambers and a heat source. Water in the lower bulb boils, vapour pressure \
+            forces it up into the upper chamber where the coffee is, it steeps as a full immersion, \
+            and when you take the heat away the vacuum pulls the brew back down through a filter.
+
+            It's immersion and filtration in one, at a very stable high temperature, which gives a \
+            cup that's clean and aromatic but with more body than paper pour-over.
+
+            It is also glassware over an open flame on a weekday morning. Spectacular to watch, \
+            genuinely good coffee, and almost nobody does it twice a day.
+            """,
+            relatedConceptIDs: ["immersion", "water-temperature"]
+        ),
+
+        Concept(
+            id: "about-cezve",
+            term: "Cezve / Turkish coffee",
+            shortDefinition: "Powder-fine coffee simmered in a small pot and served without filtering.",
+            card: """
+            A long-handled pot, coffee ground finer than espresso — closer to flour — cold water, \
+            and sugar added at the start if you want it. Bring it up slowly, let the foam rise, \
+            take it off before it boils over, and repeat once or twice.
+
+            Nothing is filtered out. The grounds settle in the cup and you stop drinking before you \
+            reach them, which is why the grind has to be so fine and why the cup is thick and \
+            intense. Cardamom is common; so is a lot of regional variation.
+
+            One of the oldest ways of making coffee still in everyday use, and one of the very few \
+            where the fine pre-ground coffee sold in most Indian shops is close to right.
+            """,
+            relatedConceptIDs: ["pre-ground", "grind-size"]
         )
     ]
 

@@ -162,6 +162,71 @@ final class SharedStoreTests: XCTestCase {
     }
 }
 
+/// The journal is the one object in this app that cannot be regenerated, so every
+/// schema change has to be additive and every new key needs an answer for records
+/// that predate it. These tests are the guard on that promise.
+final class JournalMigrationTests: XCTestCase {
+
+    /// A brew written before water, milk and the milk axis existed.
+    private let legacyBrewJSON = """
+    {
+      "id": "3F2504E0-4F89-11D3-9A0C-0305E82C3301",
+      "startedAt": "2026-01-05T08:30:00Z",
+      "methodID": "v60",
+      "recipeID": "v60-everyday",
+      "params": { "dose": 15, "ratio": 16, "waterTemp": 94, "grind": 50 },
+      "plannedParams": { "dose": 15, "ratio": 16, "waterTemp": 94, "grind": 50 },
+      "actualTotalSeconds": 185,
+      "taste": { "rating": 4, "extraction": -1, "strength": 0, "descriptors": ["sharp"] }
+    }
+    """
+
+    private func decoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }
+
+    func testLegacyBrewDecodesWithSensibleDefaults() throws {
+        let brew = try decoder().decode(Brew.self, from: Data(legacyBrewJSON.utf8))
+        XCTAssertEqual(brew.methodID, "v60")
+        XCTAssertEqual(brew.waterSource, .unknown, "an unknown water source must not fabricate one")
+        XCTAssertFalse(brew.withMilk)
+        XCTAssertEqual(brew.taste?.milkCharacter, 0)
+        XCTAssertEqual(brew.taste?.extraction, -1)
+    }
+
+    /// An unknown water source must never trigger the water rule — inventing a
+    /// cause for a brew that predates the question would be worse than silence.
+    func testLegacyBrewIsNeverDiagnosedAsAWaterProblem() throws {
+        let brew = try decoder().decode(Brew.self, from: Data(legacyBrewJSON.utf8))
+        let taste = try XCTUnwrap(brew.taste)
+        let diagnosis = DiagnosisEngine().diagnose(DiagnosisInput(
+            taste: taste,
+            method: BuiltInContent.v60,
+            params: brew.params,
+            grindControl: .uncalibrated,
+            waterSource: brew.waterSource,
+            withMilk: brew.withMilk
+        ))
+        XCTAssertNotEqual(diagnosis?.ruleID, 3)
+    }
+
+    func testRoundTripThroughEncodingPreservesNewFields() throws {
+        var brew = Brew(methodID: "moka", waterSource: .ro, withMilk: true)
+        brew.taste = TasteRecord(rating: 3, milkCharacter: -2)
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(brew)
+        let decoded = try decoder().decode(Brew.self, from: data)
+
+        XCTAssertEqual(decoded.waterSource, .ro)
+        XCTAssertTrue(decoded.withMilk)
+        XCTAssertEqual(decoded.taste?.milkCharacter, -2)
+    }
+}
+
 final class TasteRecordTests: XCTestCase {
 
     func testAxesAndRatingAreClampedToTheirRanges() {

@@ -13,6 +13,7 @@ public enum BrewParamKey: String, Codable, Hashable, Sendable, CaseIterable {
     case grind           // normalised coarseness, 0 (finest) ... 100 (coarsest)
     case bloomWater      // grams
     case bloomTime       // seconds
+    case steepTime       // seconds — immersion's primary lever, where pour-over has grind
     case yield           // grams out (espresso)
     case pressure        // bars (espresso)
     case shotTime        // seconds (espresso)
