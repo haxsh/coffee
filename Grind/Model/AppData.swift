@@ -113,7 +113,7 @@ struct AppDataStore {
     }
 
     func exportCSV(_ data: AppData) -> String {
-        var rows = ["date,method,recipe,bean,rest_days,dose_g,ratio,water_g,grind_setting,water_temp_c,total_seconds,rating,extraction,strength,descriptors,rule,adjustment,note"]
+        var rows = ["date,method,recipe,bean,rest_days,water_source,with_milk,dose_g,ratio,water_g,grind_setting,water_temp_c,steep_seconds,total_seconds,rating,extraction,milk_character,strength,descriptors,rule,adjustment,note"]
         let formatter = ISO8601DateFormatter()
 
         for brew in data.brews.sorted(by: { $0.startedAt < $1.startedAt }) {
@@ -126,14 +126,22 @@ struct AppDataStore {
                 recipe?.name ?? "",
                 bean?.name ?? "",
                 brew.beanRestDays.map(String.init) ?? "",
+                brew.waterSource == .unknown ? "" : brew.waterSource.rawValue,
+                brew.withMilk ? "yes" : "no",
                 String(format: "%.1f", brew.dose),
                 String(format: "%.1f", brew.ratio),
                 String(format: "%.0f", brew.totalWater),
                 brew.grinderSetting.map { String(format: "%.1f", $0) } ?? "",
                 brew.params[.waterTemp].map { String(format: "%.0f", $0) } ?? "",
+                brew.params[.steepTime].map { String(format: "%.0f", $0) } ?? "",
                 brew.actualTotalSeconds.map(String.init) ?? "",
                 brew.taste.map { String($0.rating) } ?? "",
-                brew.taste.map { String($0.extraction) } ?? "",
+                // Only ever write the axis the user was actually asked. A milk
+                // brew's `extraction` is a default, not an answer — exporting it
+                // as 0 would read as "balanced" to anyone analysing their own
+                // journal, which is worse than leaving the cell empty.
+                brew.withMilk ? "" : (brew.taste.map { String($0.extraction) } ?? ""),
+                brew.withMilk ? (brew.taste.map { String($0.milkCharacter) } ?? "") : "",
                 brew.taste.map { String($0.strength) } ?? "",
                 brew.taste?.descriptors.map(\.rawValue).joined(separator: " ") ?? "",
                 brew.diagnosis.map { String($0.ruleID) } ?? "",

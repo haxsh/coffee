@@ -227,6 +227,25 @@ final class JournalMigrationTests: XCTestCase {
     }
 }
 
+final class TasteAxisTests: XCTestCase {
+
+    /// A milk brew's `extraction` is a default, not an answer — the user was
+    /// asked a different question. Anything that reads a taste record has to
+    /// consult `withMilk` first, or it will report an unanswered question as
+    /// "balanced".
+    func testTheUnaskedAxisIsNeverMeaningful() {
+        let milkRecord = TasteRecord(rating: 3, extraction: 0, strength: 0, milkCharacter: -2)
+        XCTAssertFalse(milkRecord.isBalanced(withMilk: true), "the milk axis says harsh")
+        XCTAssertTrue(milkRecord.isBalanced(withMilk: false), "which is why reading the wrong one lies")
+    }
+
+    func testBalanceFollowsWhicheverAxisWasAsked() {
+        let blackRecord = TasteRecord(rating: 3, extraction: 2, strength: 0, milkCharacter: 0)
+        XCTAssertFalse(blackRecord.isBalanced(withMilk: false))
+        XCTAssertTrue(blackRecord.isBalanced(withMilk: true))
+    }
+}
+
 final class TasteRecordTests: XCTestCase {
 
     func testAxesAndRatingAreClampedToTheirRanges() {
