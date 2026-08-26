@@ -322,6 +322,92 @@ final class DiagnosisEngineTests: XCTestCase {
         XCTAssertFalse(record.isBalanced(withMilk: false))
     }
 
+    // MARK: - The engine/UI contract
+
+    /// The bug this exists to prevent: the engine returned adjustments keyed on
+    /// `steepTime`, the setup screen didn't apply it, and the timer didn't honour
+    /// it — so on every immersion method the user got correct advice, tapped
+    /// "save this for next time", and brewed something identical. Silently
+    /// ineffective advice is worse than none, because it looks like it worked.
+    ///
+    /// Generalised deliberately: this catches the *next* lever added to the
+    /// engine before the UI grows a control for it, not just the one that bit us.
+    func testEveryAdjustableParameterIsOneTheAppCanApply() throws {
+        let waters = WaterSource.allCases
+        let grinds: [GrindControl] = [.calibrated(.baratzaEncore, setting: 18), .uncalibrated, .preGround]
+
+        for method in BuiltInContent.diagnosableMethods {
+            for recipe in BuiltInContent.recipes(forMethod: method.id) {
+                for extraction in -2...2 {
+                    for strength in -2...2 {
+                        for water in waters {
+                            for grind in grinds {
+                                let result = engine.evaluate(DiagnosisInput(
+                                    taste: TasteRecord(rating: 2, extraction: extraction, strength: strength),
+                                    method: method,
+                                    // Exactly what the app builds a brew from.
+                                    params: recipe.parameters,
+                                    actualTotalSeconds: recipe.totalSeconds,
+                                    beanFreshness: .peak,
+                                    beanRestDays: 10,
+                                    grindControl: grind,
+                                    waterSource: water
+                                )).diagnosis
+                                guard let key = result?.adjustment.paramKey else { continue }
+                                XCTAssertTrue(
+                                    BrewParamKey.userAdjustable.contains(key),
+                                    "\(method.name) can be told to change '\(key.rawValue)', which the setup screen cannot apply"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Every immersion recipe must expose the step its steep time controls,
+    /// otherwise the parameter is stored but the brew never changes.
+    func testEveryImmersionRecipeHasASteepStep() {
+        for recipe in BuiltInContent.recipes {
+            guard let method = BuiltInContent.method(id: recipe.methodID),
+                  method.param(.steepTime) != nil else { continue }
+            XCTAssertTrue(recipe.isImmersion,
+                          "\(recipe.name) has a steep time but no step for it to lengthen")
+        }
+    }
+
+    func testChangingSteepTimeReshapesTheBrew() throws {
+        let base = BuiltInContent.everydayFrenchPress
+        let longer = base.withSteepSeconds(300)
+
+        XCTAssertEqual(longer.totalSeconds, base.totalSeconds + 60,
+                       "a minute more steeping should make the brew a minute longer")
+        XCTAssertEqual(longer.parameters[.steepTime], 300)
+
+        let steep = try XCTUnwrap(longer.steps.first(where: \.isSteep))
+        XCTAssertEqual(steep.endSeconds, 300, "the steep is defined by when it ends")
+
+        // Everything after the steep shifts with it rather than overlapping.
+        var previousEnd = 0
+        for step in longer.steps {
+            XCTAssertGreaterThanOrEqual(step.startSeconds, previousEnd)
+            previousEnd = step.endSeconds
+        }
+    }
+
+    func testSteepScalingIsANoOpForPourOver() {
+        let v60 = BuiltInContent.everydayV60
+        XCTAssertEqual(v60.withSteepSeconds(400).steps, v60.steps)
+        XCTAssertFalse(v60.isImmersion)
+    }
+
+    func testSteepStepCannotBeScaledBelowSomethingUsable() {
+        let squashed = BuiltInContent.everydayFrenchPress.withSteepSeconds(1)
+        let steep = squashed.steps.first(where: \.isSteep)
+        XCTAssertEqual(steep?.durationSeconds, 5, "clamped rather than inverted")
+    }
+
     // MARK: - Closing the loop
 
     func testLoopOutcomeReportsHonestly() {

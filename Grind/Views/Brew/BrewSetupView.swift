@@ -17,6 +17,7 @@ struct BrewSetupView: View {
     @State private var dose: Double = 15
     @State private var ratio: Double = 16
     @State private var waterTemp: Double = 94
+    @State private var steepTime: Double = 240
     @State private var grinderSetting: Double = 18
     @State private var beanID: UUID?
     @State private var loaded = false
@@ -70,6 +71,18 @@ struct BrewSetupView: View {
                         Stepper("\(Int(waterTemp)) °C", value: $waterTemp, in: 80...100, step: 1)
                             .monospacedDigit()
                     }
+                    // Immersion's primary lever, where pour-over has grind. It has
+                    // to be reachable, or "steep longer" is advice with nothing
+                    // behind it.
+                    if let def = method.param(.steepTime) {
+                        LabeledContent("Steep") {
+                            Stepper(BrewMath.formatSeconds(Int(steepTime)),
+                                    value: $steepTime,
+                                    in: def.minimum...def.maximum,
+                                    step: def.step)
+                                .monospacedDigit()
+                        }
+                    }
                 }
 
                 Section {
@@ -106,7 +119,7 @@ struct BrewSetupView: View {
                 }
 
                 Section("Steps") {
-                    ForEach(Array(recipe.steps.enumerated()), id: \.element.id) { index, step in
+                    ForEach(Array(effectiveRecipe.steps.enumerated()), id: \.element.id) { index, step in
                         HStack(alignment: .top, spacing: 12) {
                             Text(BrewMath.formatSeconds(step.startSeconds))
                                 .font(.caption.monospacedDigit())
@@ -141,8 +154,14 @@ struct BrewSetupView: View {
         }
     }
 
+    /// The recipe as it will actually run, so the step list reflects the steep
+    /// time rather than the authored default.
+    private var effectiveRecipe: Recipe {
+        method.param(.steepTime) == nil ? recipe : recipe.withSteepSeconds(steepTime)
+    }
+
     private var targets: [Double] {
-        BrewMath.cumulativeTargets(steps: recipe.steps, totalWater: water)
+        BrewMath.cumulativeTargets(steps: effectiveRecipe.steps, totalWater: water)
     }
 
     private var doseRange: ClosedRange<Double> {
@@ -162,6 +181,7 @@ struct BrewSetupView: View {
         dose = recipe.dose
         ratio = recipe.ratio
         waterTemp = recipe.parameters.value(.waterTemp, default: 94)
+        steepTime = recipe.parameters.value(.steepTime, default: 240)
         beanID = model.data.lastBeanID
 
         if let grinder {
@@ -172,8 +192,23 @@ struct BrewSetupView: View {
         // the user having to remember anything.
         if let adjustment = pending?.adjustment {
             if let setting = adjustment.newGrinderSetting { grinderSetting = setting }
-            if adjustment.paramKey == .ratio, let value = adjustment.newValue { ratio = value }
-            if adjustment.paramKey == .waterTemp, let value = adjustment.newValue { waterTemp = value }
+            apply(adjustment)
+        }
+    }
+
+    /// Exhaustive on purpose. A new lever in the engine should fail to compile
+    /// here rather than silently produce an adjustment the user can save and
+    /// never see applied.
+    private func apply(_ adjustment: Adjustment) {
+        guard let key = adjustment.paramKey, let value = adjustment.newValue else { return }
+        switch key {
+        case .dose: dose = value
+        case .ratio: ratio = value
+        case .waterTemp: waterTemp = value
+        case .steepTime: steepTime = value
+        case .grind: break                       // applied via newGrinderSetting, in the user's own units
+        case .bloomWater, .bloomTime, .yield, .pressure, .shotTime:
+            break                                // not levers this screen offers yet
         }
     }
 
@@ -182,6 +217,7 @@ struct BrewSetupView: View {
         params[.dose] = dose
         params[.ratio] = ratio
         params[.waterTemp] = waterTemp
+        if method.param(.steepTime) != nil { params[.steepTime] = steepTime }
         if let grinder { params[.grind] = grinder.normalised(fromSetting: grinderSetting) }
 
         let session = BrewSession(

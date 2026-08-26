@@ -17,6 +17,11 @@ public struct RecipeStep: Identifiable, Codable, Hashable, Sendable {
     public let cumulativeWaterFraction: Double?
     public let instruction: String
     public let conceptID: String?
+    /// The step whose length `BrewParamKey.steepTime` controls.
+    ///
+    /// Without this, "steep longer" is advice with nothing behind it: the
+    /// parameter changes, the timer doesn't, and the brew is identical.
+    public let isSteep: Bool
 
     public init(
         id: String,
@@ -25,7 +30,8 @@ public struct RecipeStep: Identifiable, Codable, Hashable, Sendable {
         durationSeconds: Int,
         cumulativeWaterFraction: Double? = nil,
         instruction: String,
-        conceptID: String? = nil
+        conceptID: String? = nil,
+        isSteep: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -34,9 +40,23 @@ public struct RecipeStep: Identifiable, Codable, Hashable, Sendable {
         self.cumulativeWaterFraction = cumulativeWaterFraction
         self.instruction = instruction
         self.conceptID = conceptID
+        self.isSteep = isSteep
     }
 
     public var endSeconds: Int { startSeconds + durationSeconds }
+
+    func withDuration(_ seconds: Int) -> RecipeStep {
+        RecipeStep(id: id, kind: kind, startSeconds: startSeconds, durationSeconds: seconds,
+                   cumulativeWaterFraction: cumulativeWaterFraction, instruction: instruction,
+                   conceptID: conceptID, isSteep: isSteep)
+    }
+
+    func shifted(by seconds: Int) -> RecipeStep {
+        RecipeStep(id: id, kind: kind, startSeconds: startSeconds + seconds,
+                   durationSeconds: durationSeconds,
+                   cumulativeWaterFraction: cumulativeWaterFraction, instruction: instruction,
+                   conceptID: conceptID, isSteep: isSteep)
+    }
 }
 
 public struct Recipe: Identifiable, Codable, Hashable, Sendable {
@@ -75,6 +95,29 @@ public struct Recipe: Identifiable, Codable, Hashable, Sendable {
     }
 
     public var totalSeconds: Int { steps.map(\.endSeconds).max() ?? 0 }
+
+    public var isImmersion: Bool { steps.contains(where: \.isSteep) }
+
+    /// The recipe as it would actually run at a given steep time.
+    ///
+    /// The steep step is defined by when it *ends*, because that's what the user
+    /// is timing — "four minutes" means break the crust at 4:00, not steep for
+    /// four minutes after a thirty-second pour. Everything after it shifts.
+    public func withSteepSeconds(_ seconds: Double) -> Recipe {
+        guard let index = steps.firstIndex(where: \.isSteep) else { return self }
+        let step = steps[index]
+        let newDuration = max(5, Int(seconds.rounded()) - step.startSeconds)
+        let delta = newDuration - step.durationSeconds
+        guard delta != 0 else { return self }
+
+        var updated = self
+        updated.steps[index] = step.withDuration(newDuration)
+        for i in (index + 1)..<updated.steps.count {
+            updated.steps[i] = updated.steps[i].shifted(by: delta)
+        }
+        updated.parameters[.steepTime] = Double(step.startSeconds + newDuration)
+        return updated
+    }
 
     public var dose: Double { parameters.value(.dose, default: 15) }
     public var ratio: Double { parameters.value(.ratio, default: 16) }

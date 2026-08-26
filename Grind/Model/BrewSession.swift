@@ -67,7 +67,10 @@ final class BrewSession {
         adjustedFromBrewID: UUID? = nil,
         waterSource: WaterSource = .unknown
     ) {
-        self.recipe = recipe
+        // Steep time is a parameter, so the timer has to honour it. Storing it
+        // without reshaping the steps was the bug this guards: correct advice,
+        // "saved for next time", and an identical brew.
+        self.recipe = params[.steepTime].map { recipe.withSteepSeconds($0) } ?? recipe
         self.method = method
         self.params = params
         self.plannedParams = recipe.parameters

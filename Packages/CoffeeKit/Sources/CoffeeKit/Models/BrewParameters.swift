@@ -7,6 +7,16 @@ import Foundation
 /// This indirection is why adding espresso later is an addition rather than a
 /// migration. See docs/02-content-model.md, IA risk #1.
 public enum BrewParamKey: String, Codable, Hashable, Sendable, CaseIterable {
+    /// Levers the brew setup screen can pre-fill from an adjustment.
+    ///
+    /// **The engine must never return an adjustment keyed on anything outside
+    /// this set**, or the user is handed advice, taps "save this for next time",
+    /// and nothing happens — which is worse than no advice, because it looks like
+    /// it worked. `DiagnosisEngineTests` enforces the containment.
+    public static var userAdjustable: Set<BrewParamKey> {
+        [.dose, .ratio, .waterTemp, .grind, .steepTime]
+    }
+
     case dose            // grams of coffee
     case ratio           // 1:N — water is always derived, never stored
     case waterTemp       // celsius
