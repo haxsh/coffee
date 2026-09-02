@@ -35,7 +35,8 @@ the engine doesn't have.**
 
 | Path | What it is |
 |---|---|
-| [`BUILD.md`](BUILD.md) | **Start here.** What you need to install, how to build it, how to see the widgets, and what's still waiting on you. |
+| [`HANDOFF.md`](HANDOFF.md) | **Session handoff.** Everything decided, everything built, the invariants not to break, and what's still open. Written for someone picking this up cold. |
+| [`BUILD.md`](BUILD.md) | **Start here to run it.** What you need to install, how to build it, how to see the widgets, and what's still waiting on you. |
 | `Packages/CoffeeKit/` | Domain layer — models, brew maths, the diagnosis engine, the concept library. Pure Foundation, no UI, and covered by tests that run with `swift test` on any machine. |
 | `Grind/` | The app. SwiftUI, iOS 18+. |
 | `GrindWidgets/` | Widget extension: *Brew again*, *Bean freshness*, the brew Live Activity + Dynamic Island, and a Control Centre control. |
